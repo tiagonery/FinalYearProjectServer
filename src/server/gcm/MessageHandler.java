@@ -3,20 +3,22 @@
  */
 package server.gcm;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.print.attribute.HashAttributeSet;
-
 import org.json.simple.JSONValue;
 
+import server.gcm.ClientMessage.ClientContentTypeKey;
 import server.gcm.ClientMessage.ClientMessageType;
-import server.gcm.ServerMessage.ServerMessageType;
 import server.model.AppServer;
 import server.model.Core;
 import server.model.User;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * @author Tiago
@@ -27,11 +29,11 @@ public class MessageHandler {
 
 	public void handleMessage(Map<String, Object> jsonMap) {
 		ClientMessage msg = getMessage(jsonMap);
-		if (msg.getCategory() != null) {
-			if ("ack".equals(msg.getCategory().toString())) {
+		if (msg.getMessageType() != null) {
+			if ("ack".equals(msg.getMessageType().toString())) {
 				// Process Ack
 				handleAckReceipt(jsonMap);
-			} else if ("nack".equals(msg.getCategory().toString())) {
+			} else if ("nack".equals(msg.getMessageType().toString())) {
 				// Process Nack
 				handleNackReceipt(jsonMap);
 			} else {
@@ -52,7 +54,7 @@ public class MessageHandler {
 				}
 			}
 		} else {
-			AppServer.getGcmManager().logger.log(Level.WARNING, "Unrecognized message type (%s)", msg.getCategory().toString());
+			AppServer.getGcmManager().logger.log(Level.WARNING, "Unrecognized message type (%s)", msg.getMessageType().toString());
 		}
 	}
 
@@ -85,7 +87,10 @@ public class MessageHandler {
 	public void sendMessageToClient(ServerMessage msg) {
 		GCMManager client = AppServer.getGcmManager();
 		String msgId = System.currentTimeMillis()+"";
-		String jsonRequest = GCMManager.createJsonMessage(msg.getFrom(), msgId, msg.getContent(), null, null, false);
+		Map<String, Object> data = new HashMap <String, Object>();
+		data.put("data", msg.getContent());
+		
+		String jsonRequest = GCMManager.createJsonMessage(msg.getFrom(), msgId, data, null, null, false);
 //		String jsonRequest = GCMManager.createJsonMessage("APA91bFcJlSaIYQyKM2sTCpIb9PbuVWllZDlNlt-hLcpVgJHgmRkr7JtGtA_XfupFisT_cHzKTtcuxbkMXnx7BSs7LIz1nZb7iPHDftoxm11jv7QxlzEFgg5_mBEVxfQQ9ES5kTnEZJU", "1212121212", new HashMap<String, Object>(), "sample", 10000L, true);
 		client.send(jsonRequest);
 	}
@@ -101,24 +106,44 @@ public class MessageHandler {
 
 //		ClientMessageType category = ClientMessageType.valueOf((String) jsonObject.get("message_type"));
 
-
 		@SuppressWarnings("unchecked")
 		Map<String, String> data = (Map<String, String>) jsonObject.get("data");
+		
+		ClientMessageType category = null;
+		
+		String type = (String) jsonObject.get("message_type");
+		if( type!= null){
+			category = ClientMessageType.valueOf(type);
+		}
+		
+		
+		
 		Map<String, Object> json;
 		ClientMessage msg = null;
 		if(data != null){
 		try {
+			
+			
+//			 Gson gson = new Gson();
+//		     Type type = new TypeToken<Map<String,Object>>() {}.getType();
+
+//	        Map<String,Object> deserealizedData = gson.fromJson((String)data.get("json"), type);
+		        
+			
+		     
 			json = (Map<String, Object>)  JSONValue.parseWithException(((String)data.get("json")));
 			// PackageName of the application that sent this message.
-			ClientMessageType category = ClientMessageType.valueOf((String) json.get("message_type"));
+			category = ClientMessageType.valueOf((String) json.get(ClientContentTypeKey.MESSAGE_TYPE.name()));
 			msg = new ClientMessage(from, category, messageId, json);
 		} catch (ParseException | org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
 		}
 		}else{	
 			// PackageName of the application that sent this message.
-			ClientMessageType category = ClientMessageType.valueOf((String) jsonObject.get("message_type"));
-			msg = new ClientMessage(from, category, messageId, null);
+//			ClientMessageType category = ClientMessageType.valueOf((String) jsonObject.get("message_type"));
+//			msg = new ClientMessage(from, category, messageId, null);
+//			System.out.println("Client Message with id: "+messageId+" ,is empty");
+			msg = new ClientMessage(category);
 			
 		}
 
@@ -133,7 +158,7 @@ public class MessageHandler {
 	 */
 	public ServerMessage handleIncomingDataMessage(ClientMessage clientMessage) {
 		ServerMessage serverReplyMessage = new ServerMessage(clientMessage.getFrom());
-		if (clientMessage.getCategory() != null) {
+		if (clientMessage.getMessageType() != null) {
 
 			Core core = new Core();
 			User user = core.getUserById(clientMessage.getFrom());
@@ -141,7 +166,7 @@ public class MessageHandler {
 
 				core.setUserRequester(user);
 				
-				switch (clientMessage.getCategory()) {
+				switch (clientMessage.getMessageType()) {
 				case DELETE_USER:
 					core.deleteUser(serverReplyMessage);
 					break; 
@@ -152,7 +177,7 @@ public class MessageHandler {
 					core.requestFriendshipByUsername(serverReplyMessage, clientMessage.getUsername()); //not implemented
 					break; 
 				case REQUEST_FRIENDSHIP_FB:
-					core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getFacebookID());
+					serverReplyMessage = core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFacebookIdsList());
 					break; 
 				case ACCEPT_FRIENDSHIP:
 					core.acceptFriendship(serverReplyMessage, clientMessage.getFriendshipRequest()); //not implemented
@@ -202,8 +227,8 @@ public class MessageHandler {
 				// processor.handleMessage(msg);
 			} else {
 
-				if (clientMessage.getCategory() == ClientMessageType.CREATE_USER) {
-					core.createNewUser(serverReplyMessage, clientMessage.getFrom(), clientMessage.getFacebookID(), clientMessage.getName(), clientMessage.getSurname());
+				if (clientMessage.getMessageType() == ClientMessageType.CREATE_USER) {
+					serverReplyMessage = core.createNewUser(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFrom(), clientMessage.getFacebookID(),clientMessage.getName(),clientMessage.getSurname());
 				} else {
 
 				}

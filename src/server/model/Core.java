@@ -3,6 +3,9 @@
  */
 package server.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import server.DAO.FriendshipDAO;
 import server.DAO.UserDAO;
 import server.gcm.MessageHandler;
@@ -28,15 +31,17 @@ public class Core {
 
 	/**
 	 * @param facebookID
+	 * @return 
 	 */
-	public void createNewUser(ServerMessage serverReplyMessage, String id, String facebookId, String name, String surname) {
+	public ServerMessage createNewUser(ServerMessage serverReplyMessage, String clientMessageId, String id, String facebookId, String name, String surname) {
 			UserDAO dao = new UserDAO();
+			serverReplyMessage.setMessageRepliedId(clientMessageId);
 			if(dao.createNewUser(id, facebookId, name, surname)!=null){
 				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 			}else{
 				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
 				serverReplyMessage.setErrorMessage("Couldn't create User");
-			}
+			}return serverReplyMessage;
 	}
 
 	
@@ -93,20 +98,33 @@ public class Core {
 	 * @param serverReplyMessage 
 	 * @param facebookID
 	 */
-	public void requestFriendshipByFacebook(ServerMessage serverReplyMessage, String facebookID) {
+	public ServerMessage requestFriendshipByFacebook(ServerMessage serverReplyMessage,String clientMessageId, List<String> facebookIDsList) {
 		FriendshipDAO friendshipDao = new FriendshipDAO();
+		serverReplyMessage.setMessageRepliedId(clientMessageId);
 		UserDAO userDao = new UserDAO();
-		User userRequested = userDao.getUserByFB(facebookID);
-		if(friendshipDao.requestFriendship(getUserRequester().getId(), userRequested.getId())!=null){
+		boolean success=true;
+		List<String> failedToAddIds = new ArrayList<String>();
+		for(String facebookId:facebookIDsList){
+			User userRequested = userDao.getUserByFB(facebookId);
+			if(userRequested!=null && friendshipDao.requestFriendship(getUserRequester().getFacebookId(), userRequested.getFacebookId())!=null){
+				sendFriendshipRequestNotification(userRequested.getId(), getUserRequester().getUserWithoutPrivInfo());
+				//notify user requested of new friendship request 
+				
+			}else{
+				success = false;
+				failedToAddIds.add(facebookId);
+			}
+		}if(success){
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
-
-			sendFriendshipRequestNotification(userRequested.getId(), getUserRequester());
-			//notify user requested of new friendship request 
-			
 		}else{
+
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
-			serverReplyMessage.setErrorMessage("Couldn't delete User");
-		}
+			String listOfIds = "";
+			for (String string : failedToAddIds) {
+				listOfIds = listOfIds+" "+string;
+			}
+			serverReplyMessage.setErrorMessage("Couldn't add friend with facebookid= "+listOfIds);
+		}return serverReplyMessage;
 		
 	}
 
@@ -115,7 +133,7 @@ public class Core {
 	 */
 	private void sendFriendshipRequestNotification(String to, User from) {
 		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_RECEIVED);
-		serverNotificationMessage.setFriendshipRequester(from);
+		serverNotificationMessage.setFriendshipRequester(from.getFacebookId());
 		sendNotification(serverNotificationMessage);
 		
 	}
@@ -255,7 +273,7 @@ public class Core {
 	 */
 	private void sendFriendshipRequestAcceptedNotification(String to, User from) {
 		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_RECEIVED);
-		serverNotificationMessage.setFriendshipRequestAcceptedFrom(from);
+		serverNotificationMessage.setFriendshipRequestAcceptedFrom(from.getFacebookId());
 		sendNotification(serverNotificationMessage);
 	}
 

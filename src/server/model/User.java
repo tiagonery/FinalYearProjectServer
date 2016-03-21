@@ -137,5 +137,14 @@ public class User {
 		this.facebookId = facebookId;
 	}
 
+	/**
+	 * @return
+	 */
+	public User getUserWithoutPrivInfo() {
+		User result = this;
+		result.setId(null);
+		return result;
+	}
+
 	
 }

@@ -130,7 +130,7 @@ public class UserDAO /** extends AbstractDAO */
 	 * @return
 	 */
 	public User getUserByFB(String facebookID) {
-		String query = "SELECT * FROM user WHERE"+USER_FACEBOOK_ID_COLUMN+"=" + facebookID;
+		String query = "SELECT * FROM user WHERE "+USER_FACEBOOK_ID_COLUMN+" = " + facebookID;
 		ResultSet rs = null;
 		User user = null;
 		try {

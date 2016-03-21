@@ -15,9 +15,14 @@
  */
 package server.gcm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import com.mysql.fabric.xmlrpc.base.Array;
+
 import server.model.Friendship;
+import server.model.User;
 
 /**
  * Represents a message for CCS based massaging.
@@ -51,6 +56,21 @@ public class ClientMessage extends AbstractMessage{
 
 	}
 	
+	public enum ClientContentTypeKey {
+
+		MESSAGE_TYPE,
+		REG_ID,
+		FB_ID,
+		INVITE_ID,
+		EVENT_ID,
+		USER_NAME,
+		USER_SURNAME,
+		FRIENDSHIP,
+		USER_CREATED,
+		FB_IDS_LIST;
+
+	}
+	
     /**
      * Recipient-ID.
      */
@@ -58,12 +78,16 @@ public class ClientMessage extends AbstractMessage{
     /**
      * Sender app's package.
      */
-    private ClientMessageType category;
+    private ClientMessageType messageType;
 
     public ClientMessage(String from, ClientMessageType clientMessageType, String messageId, Map<String, Object> content) {
         super (messageId, content);
     	this.from = from;
-        this.category = clientMessageType;
+        this.messageType = clientMessageType;
+    }
+
+    public ClientMessage(ClientMessageType clientMessageType) {
+        this.messageType = clientMessageType;
     }
 //    
 //    public String listmap_to_json_string(List<Map<String, Object>> list)
@@ -94,16 +118,30 @@ public class ClientMessage extends AbstractMessage{
         return from;
     }
 
-    public ClientMessageType getCategory() {
-        return category;
+    public ClientMessageType getMessageType() {
+        return messageType;
     }
 
 
-	/**
+    /**
 	 * @return
 	 */
 	public String getFacebookID() {
-		String facebookId= (String) getContent().get("facebook_id");
+		String facebookId= (String) getContent().get(ClientContentTypeKey.FB_ID.name());
+		return facebookId;
+	}
+
+    /**
+	 * @return
+	 */
+	public List<String> getFacebookIdsList() {
+		 List<String> facebookId = new ArrayList<String>();
+		Object obj =  getContent().get(ClientContentTypeKey.FB_IDS_LIST.name());
+		if (obj instanceof List){
+			facebookId.addAll((List<String>)obj);
+		}else{
+			facebookId.add((String)obj);
+		}
 		return facebookId;
 	}
 
@@ -135,7 +173,7 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public int getInviteID() {
-		int inviteID = (int) getContent().get("inviteID");
+		int inviteID = (int) getContent().get(ClientContentTypeKey.INVITE_ID.name());
 		return inviteID;
 	}
 
@@ -143,7 +181,7 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public int getEventID() {
-		int eventID = (int) getContent().get("eventID");
+		int eventID = (int) getContent().get(ClientContentTypeKey.EVENT_ID.name());
 		return eventID;
 	}
 
@@ -151,7 +189,7 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public String getName() {
-		String name = (String) getContent().get("name");
+		String name = (String) getContent().get(ClientContentTypeKey.USER_NAME.name());
 		return name;
 	}
 
@@ -159,7 +197,7 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public String getSurname() {
-		String surname = (String) getContent().get("surname");
+		String surname = (String) getContent().get(ClientContentTypeKey.USER_SURNAME.name());
 		return surname;
 	}
 
@@ -167,8 +205,17 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public Friendship getFriendshipRequest() {
-		Friendship friendship = (Friendship) getContent().get("friendship");
+		Friendship friendship = (Friendship) getContent().get(ClientContentTypeKey.FRIENDSHIP.name());
 		return friendship;
 	}
 
+	public User getUserCreated() {
+		User user = (User) getContent().get(ClientContentTypeKey.USER_CREATED.name());
+		return user;
+	}
+
+	public void setMessageType(ClientMessageType messageType) {
+		this.messageType = messageType;
+		getContent().put(ClientContentTypeKey.MESSAGE_TYPE.name(),messageType);
+	}
 }

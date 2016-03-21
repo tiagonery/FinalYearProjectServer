@@ -65,5 +65,6 @@
 	<classpathentry kind="lib" path="minidns-0.1.3.jar"/>
 	<classpathentry kind="lib" path="apache-httpcomponents-httpclient.jar"/>
 	<classpathentry kind="lib" path="mysql-connector-java-5.1.38-bin.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Tiago/Dropbox/BU/Programming/Projects/GCMServer/gson-2.2.2.jar"/>
 	<classpathentry kind="output" path="bin1"/>
 </classpath>

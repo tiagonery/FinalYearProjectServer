@@ -29,18 +29,16 @@ public class FriendshipDAO {
 	
 	public Friendship requestFriendship(String userRequesterId,String userRequestedId)  {
 		String query = "INSERT INTO " + FRIENDSHIP_TABE + " VALUES (" + userRequesterId + "," + userRequestedId + "," + FriendshipState.REQUEST_UNANSWARED.getNumber() +");";
-		ResultSet rs = null;
 		Friendship friendship = null;
 		connection = DAOManager.getConnection();
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.executeUpdate(query);
 			friendship = new Friendship(userRequesterId, userRequestedId, FriendshipState.REQUEST_UNANSWARED);
 		} catch (SQLException e) {
 			e.printStackTrace();
 
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}

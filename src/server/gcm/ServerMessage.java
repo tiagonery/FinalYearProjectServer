@@ -39,6 +39,8 @@ public class ServerMessage extends AbstractMessage{
 	
 	public enum ServerContentTypeKey {
 
+		MESSAGE_TYPE, 
+		MESSAGE_REPLIED_ID,
 		ERROR_MESSAGE,
 		FRIENDSHIP_REQUEST_FROM,
 		FRIENDSHIP_REQUEST_ACCEPTED_FROM;
@@ -51,10 +53,6 @@ public class ServerMessage extends AbstractMessage{
      */
     private String to;
     
-    /**
-     * MessageRelied-ID.
-     */
-    private String messageRepliedId;
     
     
     /**
@@ -65,17 +63,16 @@ public class ServerMessage extends AbstractMessage{
     public ServerMessage(String to, ServerMessageType serverMessageType, String messageId, Map<String, Object> content) {
         super (messageId, content);
     	this.to = to;
-        this.serverMessageType = serverMessageType;
+        setServerMessageType(serverMessageType);
     }
     
 	/**
 	 * @param to2
-	 * @param notifyFriendshipRequestReceived
-	 * @param currentTimeMillis
+	 * @param messageType
 	 */
-	public ServerMessage(String to2, ServerMessageType notifyFriendshipRequestReceived) {
+	public ServerMessage(String to2, ServerMessageType messageType) {
         this.to = to;	
-        this.serverMessageType = serverMessageType;
+        setServerMessageType(messageType);
     
 	}
 
@@ -106,15 +103,16 @@ public class ServerMessage extends AbstractMessage{
 		this.to = to;
 	}
 
-	public String getMessageRepliedId() {
-		return messageRepliedId;
-	}
+    public String getMessageError() {
+        return (String) getContent().get(ServerContentTypeKey.ERROR_MESSAGE.name());
+    }
 
 	public void setMessageRepliedId(String messageRepliedId) {
-		this.messageRepliedId = messageRepliedId;
+        getContent().put(ServerContentTypeKey.MESSAGE_REPLIED_ID.name(), messageRepliedId);
 	}
 
 	public void setServerMessageType(ServerMessageType serverMessageType) {
+        getContent().put(ServerContentTypeKey.MESSAGE_TYPE.name(),serverMessageType.name());
 		this.serverMessageType = serverMessageType;
 	}
 
@@ -129,7 +127,7 @@ public class ServerMessage extends AbstractMessage{
 	/**
 	 * @param from
 	 */
-	public void setFriendshipRequester(User from) {
+	public void setFriendshipRequester(String from) {
 		getContent().put(ServerContentTypeKey.FRIENDSHIP_REQUEST_FROM.name(), from);
 		
 	}
@@ -137,7 +135,7 @@ public class ServerMessage extends AbstractMessage{
 	/**
 	 * @param from
 	 */
-	public void setFriendshipRequestAcceptedFrom(User from) {
+	public void setFriendshipRequestAcceptedFrom(String from) {
 		getContent().put(ServerContentTypeKey.FRIENDSHIP_REQUEST_ACCEPTED_FROM.name(), from);
 	}
 
