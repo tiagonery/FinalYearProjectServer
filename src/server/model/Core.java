@@ -33,10 +33,10 @@ public class Core {
 	 * @param facebookID
 	 * @return 
 	 */
-	public ServerMessage createNewUser(ServerMessage serverReplyMessage, String clientMessageId, String id, String facebookId, String name, String surname) {
+	public ServerMessage createNewUser(ServerMessage serverReplyMessage, String clientMessageId, String regId, User user) {
 			UserDAO dao = new UserDAO();
 			serverReplyMessage.setMessageRepliedId(clientMessageId);
-			if(dao.createNewUser(id, facebookId, name, surname)!=null){
+			if(dao.createNewUser(regId, user.getFacebookId(),user.getName(),user.getSurname())!=null){
 				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 			}else{
 				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
@@ -107,7 +107,7 @@ public class Core {
 		for(String facebookId:facebookIDsList){
 			User userRequested = userDao.getUserByFB(facebookId);
 			if(userRequested!=null && friendshipDao.requestFriendship(getUserRequester().getFacebookId(), userRequested.getFacebookId())!=null){
-				sendFriendshipRequestNotification(userRequested.getId(), getUserRequester().getUserWithoutPrivInfo());
+				sendFriendshipRequestNotification(userRequested.getId(), getUserRequester());
 				//notify user requested of new friendship request 
 				
 			}else{
@@ -133,7 +133,7 @@ public class Core {
 	 */
 	private void sendFriendshipRequestNotification(String to, User from) {
 		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_RECEIVED);
-		serverNotificationMessage.setFriendshipRequester(from.getFacebookId());
+		serverNotificationMessage.setFriendshipRequester(from);
 		sendNotification(serverNotificationMessage);
 		
 	}

@@ -17,9 +17,11 @@ package server.gcm;
 
 import java.util.Map;
 
-import server.gcm.ClientMessage.ClientMessageType;
-import server.gcm.ServerMessage.ServerMessageType;
 import server.model.User;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Represents a message for CCS based massaging.
@@ -60,7 +62,7 @@ public class ServerMessage extends AbstractMessage{
      */
     private ServerMessageType serverMessageType;
 
-    public ServerMessage(String to, ServerMessageType serverMessageType, String messageId, Map<String, Object> content) {
+    public ServerMessage(String to, ServerMessageType serverMessageType, String messageId, Map<String, String> content) {
         super (messageId, content);
     	this.to = to;
         setServerMessageType(serverMessageType);
@@ -127,8 +129,10 @@ public class ServerMessage extends AbstractMessage{
 	/**
 	 * @param from
 	 */
-	public void setFriendshipRequester(String from) {
-		getContent().put(ServerContentTypeKey.FRIENDSHIP_REQUEST_FROM.name(), from);
+	public void setFriendshipRequester(User user) {
+		User stripedUser = user.getUserWithoutPrivInfo();
+		String string = getJsonValueOf(stripedUser);
+		getContent().put(ServerContentTypeKey.FRIENDSHIP_REQUEST_FROM.name(), string);
 		
 	}
 
@@ -140,5 +144,17 @@ public class ServerMessage extends AbstractMessage{
 	}
 
 
+
+	private String getJsonValueOf(Object object) {
+		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		String json=null;
+		try {
+			json = ow.writeValueAsString(object);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return json;
+
+	}
 
 }

@@ -3,16 +3,18 @@
  */
 package server.model;
 
+import java.io.Serializable;
 import java.sql.Blob;
 
-import server.DAO.UserDAO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
  * @author Tiago
  *
  */
-public class User {
+public class User implements Serializable{
 
 
 	private String username;
@@ -22,8 +24,8 @@ public class User {
 	private String facebookId;
 	private UserStatus userStatus;
 	private int age;
-	private Blob profilePicture;
 	
+
 
 	public enum UserStatus{
 		ON(StringConstants.ON),
@@ -46,10 +48,14 @@ public class User {
 		this.id = id;
 	}
 
+	public User() {
+	}
+
 	/**
-	 * @param id2
-	 * @param name2
-	 * @param surname2
+	 * @param id
+	 * @param facebookId
+	 * @param name
+	 * @param surname
 	 */
 	public User(String id, String facebookId, String name, String surname) {
 		this(id);
@@ -58,6 +64,9 @@ public class User {
 		setSurname(surname);
 	}
 
+	public String generateFullName() {
+		return getName()+" "+getSurname();
+	}
 	public String getUserName() {
 		return username;
 	}
@@ -69,7 +78,11 @@ public class User {
 
 
 	public String getName() {
-		return name;
+		if(name!=null) {
+			return name;
+		}else{
+			return "";
+		}
 	}
 
 
@@ -105,14 +118,6 @@ public class User {
 		this.age = age;
 	}
 
-	public Blob getProfilePicture() {
-		return profilePicture;
-	}
-
-	public void setProfilePicture(Blob profilePicture) {
-		this.profilePicture = profilePicture;
-	}
-
 	public String getUsername() {
 		return username;
 	}
@@ -122,7 +127,11 @@ public class User {
 	}
 
 	public String getSurname() {
-		return surname;
+		if(surname!=null) {
+			return surname;
+		}else{
+			return "";
+		}
 	}
 
 	public void setSurname(String surname) {
@@ -137,9 +146,8 @@ public class User {
 		this.facebookId = facebookId;
 	}
 
-	/**
-	 * @return
-	 */
+
+    @JsonIgnore
 	public User getUserWithoutPrivInfo() {
 		User result = this;
 		result.setId(null);

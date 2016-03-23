@@ -15,14 +15,19 @@
  */
 package server.gcm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.mysql.fabric.xmlrpc.base.Array;
-
 import server.model.Friendship;
 import server.model.User;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Represents a message for CCS based massaging.
@@ -51,24 +56,29 @@ public class ClientMessage extends AbstractMessage{
 		REFUSE_INVITE, 
 		JOIN_EVENT, 
 		LEAVE_EVENT, 
-		GET_EVENTS, 
+		REQUEST_EVENTS, 
 		WANT_TO_GO_OUT;
 
 	}
 	
 	public enum ClientContentTypeKey {
 
-		MESSAGE_TYPE,
-		REG_ID,
-		FB_ID,
-		INVITE_ID,
-		EVENT_ID,
-		USER_NAME,
-		USER_SURNAME,
-		FRIENDSHIP,
-		USER_CREATED,
-		FB_IDS_LIST;
-
+		MESSAGE_TYPE (ClientMessageType.class),
+		REG_ID (String.class),
+		FB_ID (String.class),
+		INVITE_ID (String.class),
+		EVENT_ID (String.class),
+		USER_NAME (String.class),
+		USER_SURNAME (String.class),
+		FRIENDSHIP (Friendship.class),
+		USER_CREATED (User.class),
+		FB_IDS_LIST (new ArrayList<String>().getClass());
+		
+		Class clazz;
+		
+		ClientContentTypeKey(Class clazz){
+			this.clazz = clazz;
+		}
 	}
 	
     /**
@@ -80,7 +90,7 @@ public class ClientMessage extends AbstractMessage{
      */
     private ClientMessageType messageType;
 
-    public ClientMessage(String from, ClientMessageType clientMessageType, String messageId, Map<String, Object> content) {
+    public ClientMessage(String from, ClientMessageType clientMessageType, String messageId, Map<String, String> content) {
         super (messageId, content);
     	this.from = from;
         this.messageType = clientMessageType;
@@ -135,14 +145,16 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public List<String> getFacebookIdsList() {
-		 List<String> facebookId = new ArrayList<String>();
-		Object obj =  getContent().get(ClientContentTypeKey.FB_IDS_LIST.name());
-		if (obj instanceof List){
-			facebookId.addAll((List<String>)obj);
-		}else{
-			facebookId.add((String)obj);
+		String json = (String) getContent().get(ClientContentTypeKey.FB_IDS_LIST.name());
+		ObjectMapper mapper = new ObjectMapper();
+	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+	    List<String> idsList = null;
+		try {
+			idsList = mapper.readValue(json, new TypeReference<ArrayList<String>>(){});
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		return facebookId;
+		return idsList;
 	}
 
 	/**
@@ -169,21 +181,6 @@ public class ClientMessage extends AbstractMessage{
 		return username;
 	}
 
-	/**
-	 * @return
-	 */
-	public int getInviteID() {
-		int inviteID = (int) getContent().get(ClientContentTypeKey.INVITE_ID.name());
-		return inviteID;
-	}
-
-	/**
-	 * @return
-	 */
-	public int getEventID() {
-		int eventID = (int) getContent().get(ClientContentTypeKey.EVENT_ID.name());
-		return eventID;
-	}
 
 	/**
 	 * @return
@@ -205,17 +202,29 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public Friendship getFriendshipRequest() {
-		Friendship friendship = (Friendship) getContent().get(ClientContentTypeKey.FRIENDSHIP.name());
+		String json = (String) getContent().get(ClientContentTypeKey.FRIENDSHIP.name());
+		ObjectMapper mapper = new ObjectMapper();
+	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+		Friendship friendship = null;
+		try {
+			friendship = mapper.readValue(json, Friendship.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return friendship;
 	}
 
 	public User getUserCreated() {
-		User user = (User) getContent().get(ClientContentTypeKey.USER_CREATED.name());
+		String json = (String) getContent().get(ClientContentTypeKey.USER_CREATED.name());
+		ObjectMapper mapper = new ObjectMapper();
+	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+		User user = null;
+			try {
+				user = mapper.readValue(json, User.class);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		return user;
 	}
 
-	public void setMessageType(ClientMessageType messageType) {
-		this.messageType = messageType;
-		getContent().put(ClientContentTypeKey.MESSAGE_TYPE.name(),messageType);
-	}
 }

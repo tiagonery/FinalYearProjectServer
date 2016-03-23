@@ -19,14 +19,14 @@ public abstract class AbstractMessage {
     /**
      * Payload data. A String in Json format.
      */
-    private Map<String, Object> content = new HashMap<String, Object>();
+    private Map<String, String> content = new HashMap<String, String>();
     
 
 	/**
 	 * @param messageId
 	 * @param content
 	 */
-	public AbstractMessage(String messageId, Map<String, Object> content) {
+	public AbstractMessage(String messageId, Map<String, String> content) {
         this.messageId = messageId;
         this.content = content;
 	}
@@ -53,7 +53,7 @@ public abstract class AbstractMessage {
 	}
 
 
-	protected Map<String, Object> getContent() {
+	protected Map<String, String> getContent() {
 		return content;
 	}
 

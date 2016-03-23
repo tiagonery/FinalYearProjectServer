@@ -3,8 +3,8 @@
  */
 package server.gcm;
 
-import java.lang.reflect.Type;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -17,8 +17,10 @@ import server.model.AppServer;
 import server.model.Core;
 import server.model.User;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Tiago
@@ -118,7 +120,7 @@ public class MessageHandler {
 		
 		
 		
-		Map<String, Object> json;
+		Map<String, String> json;
 		ClientMessage msg = null;
 		if(data != null){
 		try {
@@ -131,7 +133,30 @@ public class MessageHandler {
 		        
 			
 		     
-			json = (Map<String, Object>)  JSONValue.parseWithException(((String)data.get("json")));
+			json = (Map<String, String>)  JSONValue.parseWithException(((String)data.get("json")));
+
+//			Map <String, Object> content = new HashMap<>();
+//
+//				ObjectMapper mapper = new ObjectMapper();
+//				mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+//				// Map<String, User> map;
+//				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//
+//				Object obj;
+//				for (int i = 0; i <= ClientContentTypeKey.values().length; i++) {
+//
+//					String string = json.get(ClientContentTypeKey.values()[i]);
+//					if (string != null) {
+//						if (ClientContentTypeKey.values()[i] == ClientContentTypeKey.FB_IDS_LIST) {
+//							obj = mapper.readValue(string, new TypeReference<ArrayList<User>>() {});
+//							content.put(ClientContentTypeKey.values()[i].name(), obj);
+//
+//						} else {
+//							obj = mapper.readValue(string, ClientContentTypeKey.values()[i].clazz);
+//						}
+//					}
+//				}
+			
 			// PackageName of the application that sent this message.
 			category = ClientMessageType.valueOf((String) json.get(ClientContentTypeKey.MESSAGE_TYPE.name()));
 			msg = new ClientMessage(from, category, messageId, json);
@@ -171,25 +196,25 @@ public class MessageHandler {
 					core.deleteUser(serverReplyMessage);
 					break; 
 				case EDIT_CONFIG:
-					core.editConfig(serverReplyMessage, clientMessage.getConfigKey(), clientMessage.getConfigValue()); //not implemented
+//					core.editConfig(serverReplyMessage, clientMessage.getConfigKey(), clientMessage.getConfigValue()); //not implemented
 					break; 
 				case REQUEST_FRIENDSHIP_USERNAME:
-					core.requestFriendshipByUsername(serverReplyMessage, clientMessage.getUsername()); //not implemented
+//					core.requestFriendshipByUsername(serverReplyMessage, clientMessage.getUsername()); //not implemented
 					break; 
 				case REQUEST_FRIENDSHIP_FB:
 					serverReplyMessage = core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFacebookIdsList());
 					break; 
 				case ACCEPT_FRIENDSHIP:
-					core.acceptFriendship(serverReplyMessage, clientMessage.getFriendshipRequest()); //not implemented
+//					core.acceptFriendship(serverReplyMessage, clientMessage.getFriendshipRequest()); //not implemented
 					break; 
 				case REFUSE_FRIENDSHIP:
-					core.refuseFriendship(serverReplyMessage, clientMessage.getFacebookID());//not implemented
+//					core.refuseFriendship(serverReplyMessage, clientMessage.getFacebookID());//not implemented
 					break; 
 				case SEARCH_USER: 
 //					core.searchUser(serverMessage); //not implemented
 					break; 
 				case REMOVE_FRIEND:
-					core.removeFriend(serverReplyMessage, clientMessage.getFacebookID()); //not implemented
+//					core.removeFriend(serverReplyMessage, clientMessage.getFacebookID()); //not implemented
 					break; 
 				case CREATE_EVENT:
 //					core.createEvent(serverMessage); //not implemented
@@ -198,25 +223,25 @@ public class MessageHandler {
 //					core.editEvent(serverMessage); //not implemented
 					break; 
 				case INVITE_TO_EVENT:
-					core.inviteToEvent(serverReplyMessage, clientMessage.getInviteID(), clientMessage.getFacebookID()); //not implemented
+//					core.inviteToEvent(serverReplyMessage, clientMessage.getInviteID(), clientMessage.getFacebookID()); //not implemented
 					break; 
 				case ACCEPT_INVITE:
-					core.acceptInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
+//					core.acceptInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
 					break; 
 				case REFUSE_INVITE:
-					core.refuseInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
+//					core.refuseInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
 					break; 
 				case JOIN_EVENT:
-					core.joinEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
+//					core.joinEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
 					break; 
 				case LEAVE_EVENT:
-					core.leaveEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
+//					core.leaveEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
 					break; 
-				case GET_EVENTS:
-					core.getEvents(serverReplyMessage); //not implemented
+				case REQUEST_EVENTS:
+//					core.getEvents(serverReplyMessage); //not implemented
 					break; 
 				case WANT_TO_GO_OUT:
-					core.wantToGoOut(serverReplyMessage); //not implemented
+//					core.wantToGoOut(serverReplyMessage); //not implemented
 					break; 
 				// You can have any number of case statements.
 				default: 
@@ -228,7 +253,7 @@ public class MessageHandler {
 			} else {
 
 				if (clientMessage.getMessageType() == ClientMessageType.CREATE_USER) {
-					serverReplyMessage = core.createNewUser(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFrom(), clientMessage.getFacebookID(),clientMessage.getName(),clientMessage.getSurname());
+					serverReplyMessage = core.createNewUser(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFrom(), clientMessage.getUserCreated());
 				} else {
 
 				}
