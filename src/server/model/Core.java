@@ -6,12 +6,16 @@ package server.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import server.DAO.EventDAO;
 import server.DAO.FriendshipDAO;
 import server.DAO.UserDAO;
+import server.DAO.UserEventDAO;
 import server.gcm.MessageHandler;
 import server.gcm.ServerMessage;
 import server.gcm.ServerMessage.ServerMessageType;
+import server.model.AppEvent.EventVisualizationPrivacy;
 import server.model.Friendship.FriendshipState;
+import server.model.UserEvent.UserEventState;
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
@@ -33,9 +37,8 @@ public class Core {
 	 * @param facebookID
 	 * @return 
 	 */
-	public ServerMessage createNewUser(ServerMessage serverReplyMessage, String clientMessageId, String regId, User user) {
+	public ServerMessage createNewUser(ServerMessage serverReplyMessage, String regId, User user) {
 			UserDAO dao = new UserDAO();
-			serverReplyMessage.setMessageRepliedId(clientMessageId);
 			if(dao.createNewUser(regId, user.getFacebookId(),user.getName(),user.getSurname())!=null){
 				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 			}else{
@@ -66,7 +69,7 @@ public class Core {
 	 */
 	public void deleteUser(ServerMessage serverReplyMessage) {
 		UserDAO dao = new UserDAO();
-		if(dao.deleteUser(getUserRequester().getId())){
+		if(dao.deleteUser(getUserRequester().getRegId())){
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 		}else{
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
@@ -98,16 +101,15 @@ public class Core {
 	 * @param serverReplyMessage 
 	 * @param facebookID
 	 */
-	public ServerMessage requestFriendshipByFacebook(ServerMessage serverReplyMessage,String clientMessageId, List<String> facebookIDsList) {
+	public ServerMessage requestFriendshipByFacebook(ServerMessage serverReplyMessage, List<String> facebookIDsList) {
 		FriendshipDAO friendshipDao = new FriendshipDAO();
-		serverReplyMessage.setMessageRepliedId(clientMessageId);
 		UserDAO userDao = new UserDAO();
 		boolean success=true;
 		List<String> failedToAddIds = new ArrayList<String>();
 		for(String facebookId:facebookIDsList){
 			User userRequested = userDao.getUserByFB(facebookId);
 			if(userRequested!=null && friendshipDao.requestFriendship(getUserRequester().getFacebookId(), userRequested.getFacebookId())!=null){
-				sendFriendshipRequestNotification(userRequested.getId(), getUserRequester());
+				sendFriendshipRequestNotification(userRequested.getRegId(), getUserRequester());
 				//notify user requested of new friendship request 
 				
 			}else{
@@ -159,20 +161,38 @@ public class Core {
 	/**
 	 * @param facebookID
 	 */
-	public void inviteToEvent(String facebookID) {
-		// TODO Auto-generated method stub
-		
+	public void inviteToEvent(List<String> facebookIDsList, AppEvent event) {
+		UserEventDAO dao= new UserEventDAO();
+		UserDAO userDao = new UserDAO();
+		for (String id : facebookIDsList) {
+			UserEvent userEvent = dao.createUserEvent(id, event.getEventId(), UserEventState.INVITED);
+			if(userEvent!=null){
+				event.getUserEventList().add(userEvent);
+			}
+			
+		}
+		for (UserEvent userEvent : event.getUserEventList()) {
+			AppEvent eventToSend = event;
+			eventToSend.setUserEventList(dao.getUserEventsFromEvent(event.getEventId()));
+			User user = userDao.getUserByFB(userEvent.getUserId());
+			if(user!=null){
+				sendEventInviteReceivedNotification(user.getRegId(), eventToSend.getEventWithoutPrivateInfo(user.getFacebookId()));
+			}
+			
+		}
+				
 	}
+
 
 	/**
-	 * @param inviteID
-	 * @param facebookID
+	 * 
 	 */
-	public void inviteToEvent(ServerMessage serverReplyMessage, int inviteID, String facebookID) {
-		// TODO Auto-generated method stub
+	private void sendEventInviteReceivedNotification(String to, AppEvent event) {
+		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_INVITATION_RECEIVED);
+		serverNotificationMessage.setEvent(event);
+		sendNotification(serverNotificationMessage);
 		
 	}
-
 	/**
 	 * @param serverReplyMessage 
 	 * @param inviteID
@@ -211,10 +231,39 @@ public class Core {
 
 	/**
 	 * @param serverReplyMessage 
+	 * @return 
 	 * 
 	 */
-	public void getEvents(ServerMessage serverReplyMessage) {
-		// TODO Auto-generated method stub
+	public ServerMessage getEvents(ServerMessage serverReplyMessage) {
+
+		List<AppEvent> eventsList = new ArrayList<AppEvent>();
+		List<String> eventsIdsList = new ArrayList<String>();
+		EventDAO eventDao = new EventDAO();
+		UserEventDAO userEventDao = new UserEventDAO();
+		eventsIdsList = userEventDao.getAvailableEvents(getUserRequester().getFacebookId());
+		if (eventsIdsList != null) {
+			for (String id : eventsIdsList) {
+				AppEvent event = eventDao.getEvent(id);
+				if(event!=null){
+					event.setUserEventList(userEventDao.getUserEventsFromEvent(event.getEventId()));
+					eventsList.add(event.getEventWithoutPrivateInfo(getUserRequester().getFacebookId()));
+				}else{
+					serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+					serverReplyMessage.setErrorMessage("Error Retrieving a specific event");
+					
+				}
+			}
+
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setEventsList(eventsList);
+			
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving List of Events");
+		}
+		
+		return serverReplyMessage;
+		
 		
 	}
 
@@ -285,5 +334,100 @@ public class Core {
 		// TODO Auto-generated method stub
 		
 	}
+
+	/**
+	 * @param serverReplyMessage
+	 * @param messageId
+	 * @param event
+	 * @return
+	 */
+	public ServerMessage createEvent(ServerMessage serverReplyMessage, AppEvent event, List<String> fbIdsList) {
+		EventDAO dao = new EventDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		event.setEventOwner(getUserRequester()); 
+		AppEvent newEvent= dao.createNewEvent(event.getName(), event.getEventDateTimeStart(), event.getLocation(), event.getEventOwner(), event.getEventVisualizationPrivacy(), event.getEventMatchingPrivacy(), event.getActivity()); 
+		if(newEvent !=null){
+			createOwnerUserEvent(getUserRequester().getFacebookId(), newEvent.getEventId());
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			inviteToEvent(fbIdsList, newEvent);
+			if(newEvent.getEventVisualizationPrivacy()==EventVisualizationPrivacy.ALL_FRIENDS){
+				List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+				List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, fbIdsList);
+				addUserEventAsIdle(event, listToNotify);
+				
+				
+			}
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't create User");
+		}return serverReplyMessage;
+	}
+
+/**
+	 * @param facebookId
+	 * @param eventId
+	 */
+	private void createOwnerUserEvent(String facebookId, int eventId) {
+		UserEventDAO dao= new UserEventDAO();
+		UserDAO userDao = new UserDAO();
+		UserEvent userEvent = dao.createUserEvent(facebookId, eventId, UserEventState.OWNER);
+	}
+
+/**
+	 * @param eventId
+	 * @param listToNotify
+	 */
+	private void addUserEventAsIdle(AppEvent event, List<String> listToNotify) {
+		
+		UserEventDAO dao= new UserEventDAO();
+		UserDAO userDao = new UserDAO();
+		for (String id : listToNotify) {
+			UserEvent userEvent = dao.createUserEvent(id, event.getEventId(), UserEventState.IDLE);
+			if(userEvent!=null){
+				event.getUserEventList().add(userEvent);
+			}
+			
+		}
+		for (UserEvent userEvent : event.getUserEventList()) {
+			AppEvent eventToSend = event;
+			eventToSend.setUserEventList(dao.getUserEventsFromEvent(event.getEventId()));
+			User user = userDao.getUserByFB(userEvent.getUserId());
+			if(user!=null){
+				sendNewEventAvailableNotification(user.getRegId(), eventToSend.getEventWithoutPrivateInfo(user.getFacebookId()));
+			}
+			
+		}
+			
+		
+	}
+
+/**
+ * @param regId
+ * @param eventWithoutPrivateInfo
+ */
+private void sendNewEventAvailableNotification(String regId, AppEvent event) {
+	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_NEW_EVENTAVAILABLE);
+	serverNotificationMessage.setEvent(event);
+	sendNotification(serverNotificationMessage);
+	
+}
+
+/**
+	 * @param friendshipIdsList
+	 * @param fbIdsList
+	 * @return
+	 */
+	private List<String> removeInvitedUsersFromList(List<String> friendshipIdsList, List<String> fbIdsList) {
+
+		List<String> union = new ArrayList<String>(friendshipIdsList);
+		union.addAll(fbIdsList);
+		// Prepare an intersection
+		List<String> intersection = new ArrayList<String>(friendshipIdsList);
+		intersection.retainAll(fbIdsList);
+		// Subtract the intersection from the union
+		union.removeAll(intersection);
+		return union;
+	}
+	
 
 }

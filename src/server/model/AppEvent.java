@@ -3,32 +3,155 @@
  */
 package server.model;
 
-import java.sql.Timestamp;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import server.model.UserEvent.UserEventState;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Tiago
  *
  */
-public class AppEvent {
+public class AppEvent implements Serializable{
 
 
 	private int eventId;
 	private String name;
-	private Timestamp eventDateTimeStart;
-	private Timestamp eventDateTimeEnd;
-	private Address address;
+	private Date eventDateTimeStart;
+//	private Timestamp eventDateTimeEnd;
+//	private Address address;
 	private User eventOwner;
-	private List<User> confirmedParticipants;
-	private List<User> invitedUsers;
-	private EventType eventType;
-	private Venue venue;
-	
-	
-	public enum EventType{
-		PUBLIC,
-		PUBLIC_FOR_FRIENDS,
-		PRIVATE;
+	private String location;
+	private List<UserEvent> userEventList;
+	private EventVisualizationPrivacy eventVisualizationPrivacy;
+	private EventMatchingPrivacy eventMatchingPrivacy;
+//	private Venue venue;
+	private EventActivity activity;
+
+	public AppEvent(String name, EventActivity activity , UserEvent.UserEventState state) {
+		this.name = name;
+		this.activity = activity;
+	}
+	public AppEvent(int id, String name, Date dateTime, String location, User creatorFbId, EventVisualizationPrivacy visualizationPrivacy, EventMatchingPrivacy matchingPrivacy, EventActivity activity) {
+		this.eventId = id;
+		this.name = name;
+		this.eventDateTimeStart = dateTime;
+		this.location = location;
+		this.eventOwner = creatorFbId;
+		this.eventVisualizationPrivacy = visualizationPrivacy;
+		this.eventMatchingPrivacy = matchingPrivacy;
+		this.activity = activity;
+	}
+	public AppEvent() {
+	}
+
+	public enum EventVisualizationPrivacy {
+		INVTED_FRIENDS(1),
+		ALL_FRIENDS(2);
+
+
+	    private final int num;
+	    
+	    private static Map<Integer, EventVisualizationPrivacy> map = new HashMap<Integer, EventVisualizationPrivacy>();
+
+	    static {
+	        for (EventVisualizationPrivacy privacy : EventVisualizationPrivacy.values()) {
+	            map.put(privacy.num, privacy);
+	        }
+	    }
+
+	    private EventVisualizationPrivacy(final int num) { 
+	    		this.num = num; 
+	    	}
+
+	    public static EventVisualizationPrivacy valueOf(int num) {
+	        return map.get(num);
+	    }
+
+	    public int getNumber()
+	    {
+	        return num;
+	    }
+	}
+
+	public enum EventMatchingPrivacy {
+		DISABLED(1),
+		ENABLED_FOR_FRIENDS(2),
+		ENABLE_PUBLIC(3);
+		
+	    private final int num;
+	    private static Map<Integer, EventMatchingPrivacy> map = new HashMap<Integer, EventMatchingPrivacy>();
+
+	    static {
+	        for (EventMatchingPrivacy privacy : EventMatchingPrivacy.values()) {
+	            map.put(privacy.num, privacy);
+	        }
+	    }
+
+	    public static EventMatchingPrivacy valueOf(int num) {
+	        return map.get(num);
+	    }
+	    
+	    private EventMatchingPrivacy(int num)
+	    {
+	        this.num = num;
+	    }
+
+	    public int getNumber()
+	    {
+	        return num;
+	    }
+	}
+
+	public enum EventActivity{
+		DRINKS(1),
+		FOOD(2),
+		SPORTS(3),
+		BUSINESS(4),
+		FILM(5),
+		CLUB(6),
+		OTHER(7);
+		
+	    private final int num;
+	    
+	    private static Map<Integer, EventActivity> map = new HashMap<Integer, EventActivity>();
+
+	    static {
+	        for (EventActivity activity : EventActivity.values()) {
+	            map.put(activity.num, activity);
+	        }
+	    }
+
+	    public static EventActivity valueOf(int num) {
+	        return map.get(num);
+	    }
+	    
+	    private EventActivity(int num)
+	    {
+	        this.num = num;
+	    }
+
+	    public int getNumber()
+	    {
+	        return num;
+	    }
+
+		public static String[] names() {
+			EventActivity[] states = values();
+			String[] names = new String[states.length];
+
+			for (int i = 0; i < states.length; i++) {
+				names[i] = states[i].name();
+			}
+
+			return names;
+		}
 	}
 
 
@@ -52,34 +175,34 @@ public class AppEvent {
 	}
 
 
-	public Timestamp getEventDateTimeStart() {
+	public Date getEventDateTimeStart() {
 		return eventDateTimeStart;
 	}
 
 
-	public void setEventDateTimeStart(Timestamp eventDateTimeStart) {
+	public void setEventDateTimeStart(Date eventDateTimeStart) {
 		this.eventDateTimeStart = eventDateTimeStart;
 	}
 
 
-	public Timestamp getEventDateTimeEnd() {
-		return eventDateTimeEnd;
-	}
-
-
-	public void setEventDateTimeEnd(Timestamp eventDateTimeEnd) {
-		this.eventDateTimeEnd = eventDateTimeEnd;
-	}
-
-
-	public Address getAddress() {
-		return address;
-	}
-
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
+//	public Timestamp getEventDateTimeEnd() {
+//		return eventDateTimeEnd;
+//	}
+//
+//
+//	public void setEventDateTimeEnd(Timestamp eventDateTimeEnd) {
+//		this.eventDateTimeEnd = eventDateTimeEnd;
+//	}
+//
+//
+//	public Address getAddress() {
+//		return address;
+//	}
+//
+//
+//	public void setAddress(Address address) {
+//		this.address = address;
+//	}
 
 
 	public User getEventOwner() {
@@ -92,43 +215,70 @@ public class AppEvent {
 	}
 
 
-	public List<User> getConfirmedParticipants() {
-		return confirmedParticipants;
+
+	public EventVisualizationPrivacy getEventVisualizationPrivacy() {
+		return eventVisualizationPrivacy;
 	}
 
 
-	public void setConfirmedParticipants(List<User> confirmedParticipants) {
-		this.confirmedParticipants = confirmedParticipants;
+	public void setEventVisualizationPrivacy(EventVisualizationPrivacy eventVisualizationPrivacy) {
+		this.eventVisualizationPrivacy = eventVisualizationPrivacy;
 	}
 
 
-	public List<User> getInvitedUsers() {
-		return invitedUsers;
+//	public Venue getVenue() {
+//		return venue;
+//	}
+//
+//
+//	public void setVenue(Venue venue) {
+//		this.venue = venue;
+//	}
+
+	public EventActivity getActivity() {
+		return activity;
+	}
+
+	public void setActivity(EventActivity activity) {
+		this.activity = activity;
+	}
+
+	public EventMatchingPrivacy getEventMatchingPrivacy() {
+		return eventMatchingPrivacy;
+	}
+
+	public void setEventMatchingPrivacy(EventMatchingPrivacy eventMatchingPrivacy) {
+		this.eventMatchingPrivacy = eventMatchingPrivacy;
 	}
 
 
-	public void setInvitedUsers(List<User> invitedUsers) {
-		this.invitedUsers = invitedUsers;
+	public String getLocation() {
+		return location;
 	}
 
-
-	public EventType getEventType() {
-		return eventType;
+	public void setLocation(String location) {
+		this.location = location;
 	}
-
-
-	public void setEventType(EventType eventType) {
-		this.eventType = eventType;
+	public List<UserEvent> getUserEventList() {
+		if(userEventList==null){
+			userEventList = new ArrayList<UserEvent>();
+		}
+		return userEventList;
 	}
-
-
-	public Venue getVenue() {
-		return venue;
+	public void setUserEventList(List<UserEvent> userEventList) {
+		this.userEventList = userEventList;
 	}
-
-
-	public void setVenue(Venue venue) {
-		this.venue = venue;
+	
+    @JsonIgnore
+	public AppEvent getEventWithoutPrivateInfo(String currentUserId) {
+    	AppEvent result = this;
+    	List<UserEvent> newList = new ArrayList<UserEvent>();
+    	for (UserEvent userEvent : getUserEventList()) {
+			if(userEvent.getState()==UserEventState.OWNER ||userEvent.getState()==UserEventState.GOING || userEvent.getUserId().equals(currentUserId)){
+				newList.add(userEvent);
+			}
+		}
+    	result.setUserEventList(newList);
+		return result;
 	}
-
 }

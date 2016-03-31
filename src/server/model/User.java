@@ -91,7 +91,7 @@ public class User implements Serializable{
 	}
 
 
-	public String getId() {
+	public String getRegId() {
 		return id;
 	}
 

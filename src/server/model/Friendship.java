@@ -3,6 +3,11 @@
  */
 package server.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import server.model.UserEvent.UserEventState;
+
 /**
  * @author Tiago
  *
@@ -21,6 +26,18 @@ public class Friendship {
 
 
 	    private final int num;
+	    
+	    private static Map<Integer, FriendshipState> map = new HashMap<Integer, FriendshipState>();
+
+	    static {
+	        for (FriendshipState state : FriendshipState.values()) {
+	            map.put(state.num, state);
+	        }
+	    }
+
+	    public static FriendshipState valueOf(int num) {
+	        return map.get(num);
+	    }
 
 	    private FriendshipState(int num)
 	    {

@@ -15,8 +15,10 @@
  */
 package server.gcm;
 
+import java.util.List;
 import java.util.Map;
 
+import server.model.AppEvent;
 import server.model.User;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,7 +37,8 @@ public class ServerMessage extends AbstractMessage{
 		REPLY_SUCCES,
 		REPLY_ERROR,
 		NOTIFY_FRIENDSHIP_REQUEST_RECEIVED,
-		NOTIFY_INVITATION_RECEIVED;
+		NOTIFY_INVITATION_RECEIVED, 
+		NOTIFY_NEW_EVENTAVAILABLE;
 
 	}
 	
@@ -45,7 +48,9 @@ public class ServerMessage extends AbstractMessage{
 		MESSAGE_REPLIED_ID,
 		ERROR_MESSAGE,
 		FRIENDSHIP_REQUEST_FROM,
-		FRIENDSHIP_REQUEST_ACCEPTED_FROM;
+		FRIENDSHIP_REQUEST_ACCEPTED_FROM,
+		EVENTS_LIST,
+		EVENT;
 		
 	}
 
@@ -133,6 +138,24 @@ public class ServerMessage extends AbstractMessage{
 		User stripedUser = user.getUserWithoutPrivInfo();
 		String string = getJsonValueOf(stripedUser);
 		getContent().put(ServerContentTypeKey.FRIENDSHIP_REQUEST_FROM.name(), string);
+		
+	}
+	
+	/**
+	 * @param from
+	 */
+	public void setEvent(AppEvent event) {
+		String string = getJsonValueOf(event);
+		getContent().put(ServerContentTypeKey.EVENT.name(), string);
+		
+	}
+	
+	/**
+	 * @param from
+	 */
+	public void setEventsList(List<AppEvent> eventsList) {
+		String string = getJsonValueOf(eventsList);
+		getContent().put(ServerContentTypeKey.EVENTS_LIST.name(), string);
 		
 	}
 

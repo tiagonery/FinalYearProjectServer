@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import server.model.AppEvent;
 import server.model.Friendship;
 import server.model.User;
 
@@ -63,22 +64,15 @@ public class ClientMessage extends AbstractMessage{
 	
 	public enum ClientContentTypeKey {
 
-		MESSAGE_TYPE (ClientMessageType.class),
-		REG_ID (String.class),
-		FB_ID (String.class),
-		INVITE_ID (String.class),
-		EVENT_ID (String.class),
-		USER_NAME (String.class),
-		USER_SURNAME (String.class),
-		FRIENDSHIP (Friendship.class),
-		USER_CREATED (User.class),
-		FB_IDS_LIST (new ArrayList<String>().getClass());
-		
-		Class clazz;
-		
-		ClientContentTypeKey(Class clazz){
-			this.clazz = clazz;
-		}
+
+		MESSAGE_TYPE,
+		REG_ID,
+		FB_ID,
+		INVITE_ID,
+		EVENT,
+		FRIENDSHIP,
+		USER_CREATED,
+		FB_IDS_LIST;
 	}
 	
     /**
@@ -157,46 +151,6 @@ public class ClientMessage extends AbstractMessage{
 		return idsList;
 	}
 
-	/**
-	 * @return
-	 */
-	public String getConfigValue() {
-		String configValue= (String) getContent().get("configValue");
-		return configValue;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getConfigKey() {
-		String configKey = (String) getContent().get("config_key");
-		return configKey;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getUsername() {
-		String username = (String) getContent().get("username");
-		return username;
-	}
-
-
-	/**
-	 * @return
-	 */
-	public String getName() {
-		String name = (String) getContent().get(ClientContentTypeKey.USER_NAME.name());
-		return name;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getSurname() {
-		String surname = (String) getContent().get(ClientContentTypeKey.USER_SURNAME.name());
-		return surname;
-	}
 
 	/**
 	 * @return
@@ -225,6 +179,19 @@ public class ClientMessage extends AbstractMessage{
 				e.printStackTrace();
 			}
 		return user;
+	}
+
+	public AppEvent getEvent() {
+		String json = (String) getContent().get(ClientContentTypeKey.EVENT.name());
+		ObjectMapper mapper = new ObjectMapper();
+	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+		AppEvent event = null;
+			try {
+				event = mapper.readValue(json, AppEvent.class);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		return event;
 	}
 
 }

@@ -7,9 +7,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import server.model.Friendship;
+import server.model.UserEvent;
 import server.model.Friendship.FriendshipState;
+import server.model.UserEvent.UserEventState;
 import server.model.User;
 
 /**
@@ -69,5 +73,55 @@ public class FriendshipDAO {
 			DbUtil.close(connection);
 		}
 		return friendship;
+	}
+
+
+
+	/**
+	 * @param facebookId
+	 * @return
+	 */
+	public List<Friendship> getFriendships(String facebookId) {
+		String query = "SELECT * FROM "+FRIENDSHIP_TABE+" WHERE "+FRIENDSHIP_USER_1_COLUMN+" = '" + facebookId+"' OR "+FRIENDSHIP_USER_2_COLUMN+" = '" + facebookId+"'";
+		ResultSet rs = null;
+		List<Friendship> friendships = new ArrayList<Friendship>();
+		try {
+			connection = DAOManager.getConnection();
+			statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			if (rs.next()) {
+				Friendship friendship = new Friendship(rs.getNString(FRIENDSHIP_USER_1_COLUMN), rs.getNString(FRIENDSHIP_USER_2_COLUMN), FriendshipState.valueOf(rs.getInt(FRIENDSHIP_STATE_COLUMN)));
+				friendships.add(friendship);
+
+			}
+		} catch (SQLException e) {
+			friendships = null;
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs);
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return friendships;
+	}
+
+
+
+	/**
+	 * @param facebookId
+	 * @return
+	 */
+	public List<String> getFriendsIds(String facebookId) {
+		List<Friendship> friendships = getFriendships(facebookId);
+		List<String> idsList = new ArrayList<String>();
+		for (Friendship friendship : friendships) {
+			if(friendship.getUser1Id().equals(facebookId)){
+				idsList.add(friendship.getUser2Id());
+			}else{
+				idsList.add(friendship.getUser1Id());
+			}
+		}
+		return idsList;
+		
 	}
 }

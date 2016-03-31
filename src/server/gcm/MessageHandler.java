@@ -13,6 +13,7 @@ import org.json.simple.JSONValue;
 
 import server.gcm.ClientMessage.ClientContentTypeKey;
 import server.gcm.ClientMessage.ClientMessageType;
+import server.gcm.ServerMessage.ServerMessageType;
 import server.model.AppServer;
 import server.model.Core;
 import server.model.User;
@@ -183,6 +184,7 @@ public class MessageHandler {
 	 */
 	public ServerMessage handleIncomingDataMessage(ClientMessage clientMessage) {
 		ServerMessage serverReplyMessage = new ServerMessage(clientMessage.getFrom());
+		serverReplyMessage.setMessageRepliedId(clientMessage.getMessageId());
 		if (clientMessage.getMessageType() != null) {
 
 			Core core = new Core();
@@ -202,7 +204,7 @@ public class MessageHandler {
 //					core.requestFriendshipByUsername(serverReplyMessage, clientMessage.getUsername()); //not implemented
 					break; 
 				case REQUEST_FRIENDSHIP_FB:
-					serverReplyMessage = core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFacebookIdsList());
+					serverReplyMessage = core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getFacebookIdsList());
 					break; 
 				case ACCEPT_FRIENDSHIP:
 //					core.acceptFriendship(serverReplyMessage, clientMessage.getFriendshipRequest()); //not implemented
@@ -217,7 +219,7 @@ public class MessageHandler {
 //					core.removeFriend(serverReplyMessage, clientMessage.getFacebookID()); //not implemented
 					break; 
 				case CREATE_EVENT:
-//					core.createEvent(serverMessage); //not implemented
+					serverReplyMessage = core.createEvent(serverReplyMessage, clientMessage.getEvent(), clientMessage.getFacebookIdsList());
 					break; 
 				case EDIT_EVENT:
 //					core.editEvent(serverMessage); //not implemented
@@ -238,7 +240,7 @@ public class MessageHandler {
 //					core.leaveEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
 					break; 
 				case REQUEST_EVENTS:
-//					core.getEvents(serverReplyMessage); //not implemented
+					serverReplyMessage = core.getEvents(serverReplyMessage);
 					break; 
 				case WANT_TO_GO_OUT:
 //					core.wantToGoOut(serverReplyMessage); //not implemented
@@ -253,7 +255,7 @@ public class MessageHandler {
 			} else {
 
 				if (clientMessage.getMessageType() == ClientMessageType.CREATE_USER) {
-					serverReplyMessage = core.createNewUser(serverReplyMessage, clientMessage.getMessageId(), clientMessage.getFrom(), clientMessage.getUserCreated());
+					serverReplyMessage = core.createNewUser(serverReplyMessage, clientMessage.getFrom(), clientMessage.getUserCreated());
 				} else {
 
 				}
