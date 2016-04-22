@@ -58,7 +58,8 @@ public class ClientMessage extends AbstractMessage{
 		JOIN_EVENT, 
 		LEAVE_EVENT, 
 		REQUEST_EVENTS, 
-		WANT_TO_GO_OUT;
+		WANT_TO_GO_OUT,
+		REQUEST_ACTIVITIES;
 
 	}
 	

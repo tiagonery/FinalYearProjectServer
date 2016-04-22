@@ -345,7 +345,7 @@ public class Core {
 		EventDAO dao = new EventDAO();
 		FriendshipDAO friendshipDAO = new FriendshipDAO();
 		event.setEventOwner(getUserRequester()); 
-		AppEvent newEvent= dao.createNewEvent(event.getName(), event.getEventDateTimeStart(), event.getLocation(), event.getEventOwner(), event.getEventVisualizationPrivacy(), event.getEventMatchingPrivacy(), event.getActivity()); 
+		AppEvent newEvent= dao.createNewEvent(event.getName(), event.getEventDateTimeStart(), event.getLocation(), event.getEventOwner(), event.getEventVisualizationPrivacy(), event.getEventMatchingPrivacy(), event.getEventType()); 
 		if(newEvent !=null){
 			createOwnerUserEvent(getUserRequester().getFacebookId(), newEvent.getEventId());
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);

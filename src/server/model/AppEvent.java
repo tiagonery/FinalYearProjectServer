@@ -32,13 +32,13 @@ public class AppEvent implements Serializable{
 	private EventVisualizationPrivacy eventVisualizationPrivacy;
 	private EventMatchingPrivacy eventMatchingPrivacy;
 //	private Venue venue;
-	private EventActivity activity;
+	private EventType eventType;
 
-	public AppEvent(String name, EventActivity activity , UserEvent.UserEventState state) {
+	public AppEvent(String name, EventType eventType , UserEvent.UserEventState state) {
 		this.name = name;
-		this.activity = activity;
+		this.eventType = eventType;
 	}
-	public AppEvent(int id, String name, Date dateTime, String location, User creatorFbId, EventVisualizationPrivacy visualizationPrivacy, EventMatchingPrivacy matchingPrivacy, EventActivity activity) {
+	public AppEvent(int id, String name, Date dateTime, String location, User creatorFbId, EventVisualizationPrivacy visualizationPrivacy, EventMatchingPrivacy matchingPrivacy, EventType eventType) {
 		this.eventId = id;
 		this.name = name;
 		this.eventDateTimeStart = dateTime;
@@ -46,7 +46,7 @@ public class AppEvent implements Serializable{
 		this.eventOwner = creatorFbId;
 		this.eventVisualizationPrivacy = visualizationPrivacy;
 		this.eventMatchingPrivacy = matchingPrivacy;
-		this.activity = activity;
+		this.eventType = eventType;
 	}
 	public AppEvent() {
 	}
@@ -109,7 +109,7 @@ public class AppEvent implements Serializable{
 	    }
 	}
 
-	public enum EventActivity{
+	public enum EventType{
 		DRINKS(1),
 		FOOD(2),
 		SPORTS(3),
@@ -120,19 +120,19 @@ public class AppEvent implements Serializable{
 		
 	    private final int num;
 	    
-	    private static Map<Integer, EventActivity> map = new HashMap<Integer, EventActivity>();
+	    private static Map<Integer, EventType> map = new HashMap<Integer, EventType>();
 
 	    static {
-	        for (EventActivity activity : EventActivity.values()) {
-	            map.put(activity.num, activity);
+	        for (EventType eventType : EventType.values()) {
+	            map.put(eventType.num, eventType);
 	        }
 	    }
 
-	    public static EventActivity valueOf(int num) {
+	    public static EventType valueOf(int num) {
 	        return map.get(num);
 	    }
 	    
-	    private EventActivity(int num)
+	    private EventType(int num)
 	    {
 	        this.num = num;
 	    }
@@ -143,7 +143,7 @@ public class AppEvent implements Serializable{
 	    }
 
 		public static String[] names() {
-			EventActivity[] states = values();
+			EventType[] states = values();
 			String[] names = new String[states.length];
 
 			for (int i = 0; i < states.length; i++) {
@@ -235,12 +235,12 @@ public class AppEvent implements Serializable{
 //		this.venue = venue;
 //	}
 
-	public EventActivity getActivity() {
-		return activity;
+	public EventType getEventType() {
+		return eventType;
 	}
 
-	public void setActivity(EventActivity activity) {
-		this.activity = activity;
+	public void setEventType(EventType eventType) {
+		this.eventType = eventType;
 	}
 
 	public EventMatchingPrivacy getEventMatchingPrivacy() {
