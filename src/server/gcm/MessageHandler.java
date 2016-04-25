@@ -220,6 +220,9 @@ public class MessageHandler {
 					break; 
 				case CREATE_EVENT:
 					serverReplyMessage = core.createEvent(serverReplyMessage, clientMessage.getEvent(), clientMessage.getFacebookIdsList());
+					break;
+				case CREATE_WISH:
+					serverReplyMessage = core.createWish(serverReplyMessage, clientMessage.getWish());
 					break; 
 				case EDIT_EVENT:
 //					core.editEvent(serverMessage); //not implemented
@@ -241,6 +244,9 @@ public class MessageHandler {
 					break; 
 				case REQUEST_EVENTS:
 					serverReplyMessage = core.getEvents(serverReplyMessage);
+					break; 
+				case REQUEST_WISHES:
+					serverReplyMessage = core.getWishes(serverReplyMessage);
 					break; 
 				case WANT_TO_GO_OUT:
 //					core.wantToGoOut(serverReplyMessage); //not implemented

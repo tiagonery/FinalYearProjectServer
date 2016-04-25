@@ -10,13 +10,13 @@ import server.DAO.EventDAO;
 import server.DAO.FriendshipDAO;
 import server.DAO.UserDAO;
 import server.DAO.UserEventDAO;
+import server.DAO.UserWishDAO;
+import server.DAO.WishDAO;
 import server.gcm.MessageHandler;
 import server.gcm.ServerMessage;
 import server.gcm.ServerMessage.ServerMessageType;
-import server.model.AppEvent.EventVisualizationPrivacy;
 import server.model.Friendship.FriendshipState;
 import server.model.UserEvent.UserEventState;
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * @author Tiago
@@ -168,6 +168,8 @@ public class Core {
 			UserEvent userEvent = dao.createUserEvent(id, event.getEventId(), UserEventState.INVITED);
 			if(userEvent!=null){
 				event.getUserEventList().add(userEvent);
+			}else{
+				System.out.println("could not Invite user with id:"+id+" to event");
 			}
 			
 		}
@@ -178,6 +180,9 @@ public class Core {
 			if(user!=null){
 				sendEventInviteReceivedNotification(user.getRegId(), eventToSend.getEventWithoutPrivateInfo(user.getFacebookId()));
 			}
+		else{
+			System.out.println("could not Notify user with id:"+userEvent.getUserId()+" to event");
+		}
 			
 		}
 				
@@ -266,6 +271,44 @@ public class Core {
 		
 		
 	}
+	
+	public ServerMessage getWishes(ServerMessage serverReplyMessage) {
+
+		List<Wish> wishesList = new ArrayList<Wish>();
+		List<String> wishesIdsList = new ArrayList<String>();
+		WishDAO wishDao = new WishDAO();
+		UserWishDAO userWishDao = new UserWishDAO();
+		wishesIdsList = userWishDao.getAvailableWishes(getUserRequester().getFacebookId());
+		if (wishesIdsList != null) {
+			for (String id : wishesIdsList) {
+				Wish wish = wishDao.getWish(id);
+				if(wish!=null){
+					List<UserWish> userWishList = userWishDao.getUserWishesFromWish(wish.getWishId());
+					wish.setUserWishList(userWishList);
+					if(wish.getWishOwner().getFacebookId()!=getUserRequester().getFacebookId()){
+						wish = wish.getWishAsNonOwner(getUserRequester().getFacebookId());
+					}
+					wishesList.add(wish);
+				}else{
+					serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+					serverReplyMessage.setErrorMessage("Error Retrieving a specific event");
+					
+				}
+			}
+
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setWishesList(wishesList);
+			
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving List of Wishes");
+		}
+		
+		return serverReplyMessage;
+		
+		
+	}
+	
 
 	/**
 	 * @param serverReplyMessage 
@@ -344,33 +387,77 @@ public class Core {
 	public ServerMessage createEvent(ServerMessage serverReplyMessage, AppEvent event, List<String> fbIdsList) {
 		EventDAO dao = new EventDAO();
 		FriendshipDAO friendshipDAO = new FriendshipDAO();
-		event.setEventOwner(getUserRequester()); 
-		AppEvent newEvent= dao.createNewEvent(event.getName(), event.getEventDateTimeStart(), event.getLocation(), event.getEventOwner(), event.getEventVisualizationPrivacy(), event.getEventMatchingPrivacy(), event.getEventType()); 
-		if(newEvent !=null){
+		event.setEventOwner(getUserRequester());
+		AppEvent newEvent = dao.createNewEvent(event.getName(), event.getEventDateTimeStart(), event.getLocation(), event.getEventOwner(), event.getEventType());
+		if (newEvent != null) {
 			createOwnerUserEvent(getUserRequester().getFacebookId(), newEvent.getEventId());
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 			inviteToEvent(fbIdsList, newEvent);
-			if(newEvent.getEventVisualizationPrivacy()==EventVisualizationPrivacy.ALL_FRIENDS){
-				List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
-				List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, fbIdsList);
-				addUserEventAsIdle(event, listToNotify);
-				
-				
-			}
-		}else{
+			// if(newEvent.getEventVisualizationPrivacy()==EventVisualizationPrivacy.ALL_FRIENDS){
+			List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+			List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, fbIdsList);
+			addUserEventAsIdle(event, listToNotify);
+
+			// }
+		} else {
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
 			serverReplyMessage.setErrorMessage("Couldn't create User");
-		}return serverReplyMessage;
+		}
+		return serverReplyMessage;
 	}
 
-/**
+
+	/**
+	 * @param serverReplyMessage
+	 * @param messageId
+	 * @param event
+	 * @return
+	 */
+	public ServerMessage createWish(ServerMessage serverReplyMessage, Wish wish) {
+		WishDAO dao = new WishDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		UserDAO userDAO = new UserDAO();
+		wish.setWishOwner(getUserRequester());
+		Wish newWish = dao.createNewWish(wish.getName(), wish.getWishDateTime(), wish.getWishOwner(), wish.getEventType());
+		if (newWish != null) {
+			createOwnerUserWish(getUserRequester().getFacebookId(), newWish.getWishId());
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+			for (String id : friendshipIdsList) {
+				User user = userDAO.getUserByFB(id);
+				if(user!=null){
+					sendNewWishAvailableNotification(user.getRegId(), newWish.getWishAsNonOwner(user.getFacebookId()));
+				}
+				
+			}
+
+			// }
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't create Wish");
+		}
+		return serverReplyMessage;
+	}
+
+	/**
 	 * @param facebookId
 	 * @param eventId
 	 */
 	private void createOwnerUserEvent(String facebookId, int eventId) {
 		UserEventDAO dao= new UserEventDAO();
-		UserDAO userDao = new UserDAO();
 		UserEvent userEvent = dao.createUserEvent(facebookId, eventId, UserEventState.OWNER);
+	}
+	
+	/**
+	 * @param facebookId
+	 * @param eventId
+	 */
+	private void createOwnerUserWish(String facebookId, int wishId) {
+		UserWishDAO dao= new UserWishDAO();
+		UserWish userWish = dao.createUserWish(facebookId, wishId);
+		if(userWish==null){
+			System.out.println("Could not create UserWish for Owner");
+		}
 	}
 
 /**
@@ -408,6 +495,17 @@ public class Core {
 private void sendNewEventAvailableNotification(String regId, AppEvent event) {
 	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_NEW_EVENTAVAILABLE);
 	serverNotificationMessage.setEvent(event);
+	sendNotification(serverNotificationMessage);
+	
+}
+
+/**
+ * @param regId
+ * @param eventWithoutPrivateInfo
+ */
+private void sendNewWishAvailableNotification(String regId, Wish wish) {
+	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_NEW_WISH_AVAILABLE);
+	serverNotificationMessage.setWish(wish);
 	sendNotification(serverNotificationMessage);
 	
 }

@@ -29,8 +29,8 @@ public class AppEvent implements Serializable{
 	private User eventOwner;
 	private String location;
 	private List<UserEvent> userEventList;
-	private EventVisualizationPrivacy eventVisualizationPrivacy;
-	private EventMatchingPrivacy eventMatchingPrivacy;
+//	private EventVisualizationPrivacy eventVisualizationPrivacy;
+//	private EventMatchingPrivacy eventMatchingPrivacy;
 //	private Venue venue;
 	private EventType eventType;
 
@@ -38,14 +38,14 @@ public class AppEvent implements Serializable{
 		this.name = name;
 		this.eventType = eventType;
 	}
-	public AppEvent(int id, String name, Date dateTime, String location, User creatorFbId, EventVisualizationPrivacy visualizationPrivacy, EventMatchingPrivacy matchingPrivacy, EventType eventType) {
+	public AppEvent(int id, String name, Date dateTime, String location, User creatorFbId, EventType eventType) {
 		this.eventId = id;
 		this.name = name;
 		this.eventDateTimeStart = dateTime;
 		this.location = location;
 		this.eventOwner = creatorFbId;
-		this.eventVisualizationPrivacy = visualizationPrivacy;
-		this.eventMatchingPrivacy = matchingPrivacy;
+//		this.eventVisualizationPrivacy = visualizationPrivacy;
+//		this.eventMatchingPrivacy = matchingPrivacy;
 		this.eventType = eventType;
 	}
 	public AppEvent() {
@@ -80,43 +80,51 @@ public class AppEvent implements Serializable{
 	    }
 	}
 
-	public enum EventMatchingPrivacy {
-		DISABLED(1),
-		ENABLED_FOR_FRIENDS(2),
-		ENABLE_PUBLIC(3);
-		
-	    private final int num;
-	    private static Map<Integer, EventMatchingPrivacy> map = new HashMap<Integer, EventMatchingPrivacy>();
-
-	    static {
-	        for (EventMatchingPrivacy privacy : EventMatchingPrivacy.values()) {
-	            map.put(privacy.num, privacy);
-	        }
-	    }
-
-	    public static EventMatchingPrivacy valueOf(int num) {
-	        return map.get(num);
-	    }
-	    
-	    private EventMatchingPrivacy(int num)
-	    {
-	        this.num = num;
-	    }
-
-	    public int getNumber()
-	    {
-	        return num;
-	    }
-	}
+//	public enum EventMatchingPrivacy {
+//		DISABLED(1),
+//		ENABLED_FOR_FRIENDS(2),
+//		ENABLE_PUBLIC(3);
+//		
+//	    private final int num;
+//	    private static Map<Integer, EventMatchingPrivacy> map = new HashMap<Integer, EventMatchingPrivacy>();
+//
+//	    static {
+//	        for (EventMatchingPrivacy privacy : EventMatchingPrivacy.values()) {
+//	            map.put(privacy.num, privacy);
+//	        }
+//	    }
+//
+//	    public static EventMatchingPrivacy valueOf(int num) {
+//	        return map.get(num);
+//	    }
+//	    
+//	    private EventMatchingPrivacy(int num)
+//	    {
+//	        this.num = num;
+//	    }
+//
+//	    public int getNumber()
+//	    {
+//	        return num;
+//	    }
+//	}
 
 	public enum EventType{
-		DRINKS(1),
-		FOOD(2),
-		SPORTS(3),
-		BUSINESS(4),
+		FOOD(1),
+		COFFEE(2),
+		BAR(3),
+		CLUB(4),
 		FILM(5),
-		CLUB(6),
-		OTHER(7);
+		GAME(6),
+		SPORTS(7),
+		EXERCISE(8),
+		SWIM(9),
+		NATURE(10),
+		TRAVEL(11),
+		SHOPPING(12),
+		DATING(13),
+		BUSINESS(14),
+		OTHER(15);
 		
 	    private final int num;
 	    
@@ -216,14 +224,14 @@ public class AppEvent implements Serializable{
 
 
 
-	public EventVisualizationPrivacy getEventVisualizationPrivacy() {
-		return eventVisualizationPrivacy;
-	}
-
-
-	public void setEventVisualizationPrivacy(EventVisualizationPrivacy eventVisualizationPrivacy) {
-		this.eventVisualizationPrivacy = eventVisualizationPrivacy;
-	}
+//	public EventVisualizationPrivacy getEventVisualizationPrivacy() {
+//		return eventVisualizationPrivacy;
+//	}
+//
+//
+//	public void setEventVisualizationPrivacy(EventVisualizationPrivacy eventVisualizationPrivacy) {
+//		this.eventVisualizationPrivacy = eventVisualizationPrivacy;
+//	}
 
 
 //	public Venue getVenue() {
@@ -243,13 +251,13 @@ public class AppEvent implements Serializable{
 		this.eventType = eventType;
 	}
 
-	public EventMatchingPrivacy getEventMatchingPrivacy() {
-		return eventMatchingPrivacy;
-	}
-
-	public void setEventMatchingPrivacy(EventMatchingPrivacy eventMatchingPrivacy) {
-		this.eventMatchingPrivacy = eventMatchingPrivacy;
-	}
+//	public EventMatchingPrivacy getEventMatchingPrivacy() {
+//		return eventMatchingPrivacy;
+//	}
+//
+//	public void setEventMatchingPrivacy(EventMatchingPrivacy eventMatchingPrivacy) {
+//		this.eventMatchingPrivacy = eventMatchingPrivacy;
+//	}
 
 
 	public String getLocation() {

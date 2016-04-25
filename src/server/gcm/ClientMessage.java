@@ -23,6 +23,7 @@ import java.util.Map;
 import server.model.AppEvent;
 import server.model.Friendship;
 import server.model.User;
+import server.model.Wish;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -49,17 +50,19 @@ public class ClientMessage extends AbstractMessage{
 		ACCEPT_FRIENDSHIP, 
 		REFUSE_FRIENDSHIP, 
 		SEARCH_USER, 
-		REMOVE_FRIEND, 
-		CREATE_EVENT, 
+		REMOVE_FRIEND,
+		CREATE_EVENT,
+		CREATE_WISH, 
 		EDIT_EVENT, 
 		INVITE_TO_EVENT, 
 		ACCEPT_INVITE, 
-		REFUSE_INVITE, 
-		JOIN_EVENT, 
-		LEAVE_EVENT, 
-		REQUEST_EVENTS, 
-		WANT_TO_GO_OUT,
-		REQUEST_ACTIVITIES;
+		REFUSE_INVITE,
+		JOIN_EVENT,
+		JOIN_WISH,
+		LEAVE_EVENT,
+		REQUEST_EVENTS,
+		REQUEST_WISHES,
+		WANT_TO_GO_OUT;
 
 	}
 	
@@ -71,6 +74,7 @@ public class ClientMessage extends AbstractMessage{
 		FB_ID,
 		INVITE_ID,
 		EVENT,
+		WISH,
 		FRIENDSHIP,
 		USER_CREATED,
 		FB_IDS_LIST;
@@ -193,6 +197,19 @@ public class ClientMessage extends AbstractMessage{
 				e.printStackTrace();
 			}
 		return event;
+	}
+
+	public Wish getWish() {
+		String json = (String) getContent().get(ClientContentTypeKey.WISH.name());
+		ObjectMapper mapper = new ObjectMapper();
+	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
+		Wish wish = null;
+			try {
+				wish = mapper.readValue(json, Wish.class);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		return wish;
 	}
 
 }

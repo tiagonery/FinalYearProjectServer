@@ -20,6 +20,7 @@ import java.util.Map;
 
 import server.model.AppEvent;
 import server.model.User;
+import server.model.Wish;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +39,8 @@ public class ServerMessage extends AbstractMessage{
 		REPLY_ERROR,
 		NOTIFY_FRIENDSHIP_REQUEST_RECEIVED,
 		NOTIFY_INVITATION_RECEIVED, 
-		NOTIFY_NEW_EVENTAVAILABLE;
+		NOTIFY_NEW_EVENTAVAILABLE,
+		NOTIFY_NEW_WISH_AVAILABLE;
 
 	}
 	
@@ -50,7 +52,9 @@ public class ServerMessage extends AbstractMessage{
 		FRIENDSHIP_REQUEST_FROM,
 		FRIENDSHIP_REQUEST_ACCEPTED_FROM,
 		EVENTS_LIST,
-		EVENT;
+		EVENT,
+		WISHES_LIST,
+		WISH;
 		
 	}
 
@@ -153,9 +157,27 @@ public class ServerMessage extends AbstractMessage{
 	/**
 	 * @param from
 	 */
+	public void setWish(Wish wish) {
+		String string = getJsonValueOf(wish);
+		getContent().put(ServerContentTypeKey.WISH.name(), string);
+		
+	}
+	
+	/**
+	 * @param from
+	 */
 	public void setEventsList(List<AppEvent> eventsList) {
 		String string = getJsonValueOf(eventsList);
 		getContent().put(ServerContentTypeKey.EVENTS_LIST.name(), string);
+		
+	}
+	
+	/**
+	 * @param from
+	 */
+	public void setWishesList(List<Wish> wishesList) {
+		String string = getJsonValueOf(wishesList);
+		getContent().put(ServerContentTypeKey.WISHES_LIST.name(), string);
 		
 	}
 
