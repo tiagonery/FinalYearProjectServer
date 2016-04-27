@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import server.model.AppEvent;
 import server.model.Wish;
 import server.model.AppEvent.EventType;
 import server.model.User;
@@ -31,6 +32,7 @@ public class WishDAO /** extends AbstractDAO */
 	private static final String WISH_CREATOR_FACEBOOK_ID_COLUMN = "owner_id";
 	private static final String WISH_DATETIME_COLUMN = "date_time";
 	private static final String WISH_ACTIVITY_TYPE_COLUMN = "type";
+	private static final String WISH_EVENT_ID_COLUMN = "eventid";
 	private Connection connection;
 	private Statement statement;
 
@@ -63,7 +65,7 @@ public class WishDAO /** extends AbstractDAO */
 	// }
 	//
 
-	public Wish getWish(String wishId)  {
+	public Wish getWish(int wishId)  {
 		String query = "SELECT * FROM "+WISH_TABLE+" WHERE "+WISH_ID_COLUMN+" = '" + wishId+"'";
 		ResultSet rs = null;
 		Wish wish = null;
@@ -74,8 +76,14 @@ public class WishDAO /** extends AbstractDAO */
 			if (rs.next()) {
 				User user = new User();
 				user.setFacebookId(rs.getNString(WISH_CREATOR_FACEBOOK_ID_COLUMN));
-				wish = new Wish(rs.getInt(WISH_ID_COLUMN), rs.getNString(WISH_NAME), rs.getDate(WISH_DATETIME_COLUMN), EventType.valueOf(rs.getInt(WISH_ACTIVITY_TYPE_COLUMN)), user);
+				wish = new Wish(rs.getInt(WISH_ID_COLUMN), rs.getNString(WISH_NAME),new Date(rs.getTimestamp(WISH_DATETIME_COLUMN).getTime()), EventType.valueOf(rs.getInt(WISH_ACTIVITY_TYPE_COLUMN)), user);
 
+				int eventId = rs.getInt(WISH_EVENT_ID_COLUMN);
+				if(!rs.wasNull()){
+					AppEvent event = new AppEvent();
+					event.setEventId(eventId);
+					wish.setLinkedEvent(event);
+				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import server.model.AppEvent;
 import server.model.User;
+import server.model.UserEvent;
 import server.model.Wish;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,7 +54,10 @@ public class ServerMessage extends AbstractMessage{
 		FRIENDSHIP_REQUEST_ACCEPTED_FROM,
 		EVENTS_LIST,
 		EVENT,
-		WISHES_LIST,
+        USERS_LIST,
+        USERS_EVENT_LIST,
+        WISHES_LIST,
+        USERS_WISH_LIST,
 		WISH;
 		
 	}
@@ -171,13 +175,29 @@ public class ServerMessage extends AbstractMessage{
 		getContent().put(ServerContentTypeKey.EVENTS_LIST.name(), string);
 		
 	}
-	
+
 	/**
 	 * @param from
 	 */
 	public void setWishesList(List<Wish> wishesList) {
 		String string = getJsonValueOf(wishesList);
 		getContent().put(ServerContentTypeKey.WISHES_LIST.name(), string);
+		
+	}
+	/**
+	 * @param from
+	 */
+	public void setUsersList(List<User> usersList) {
+		String string = getJsonValueOf(usersList);
+		getContent().put(ServerContentTypeKey.USERS_LIST.name(), string);
+		
+	}
+	/**
+	 * @param from
+	 */
+	public void setUsersEventList(List<UserEvent> usersEventList) {
+		String string = getJsonValueOf(usersEventList);
+		getContent().put(ServerContentTypeKey.USERS_EVENT_LIST.name(), string);
 		
 	}
 

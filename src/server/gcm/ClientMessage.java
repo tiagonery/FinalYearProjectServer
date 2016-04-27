@@ -47,6 +47,7 @@ public class ClientMessage extends AbstractMessage{
 		EDIT_CONFIG, 
 		REQUEST_FRIENDSHIP_USERNAME, 
 		REQUEST_FRIENDSHIP_FB, 
+		REQUEST_USERS_WISH_LIST,
 		ACCEPT_FRIENDSHIP, 
 		REFUSE_FRIENDSHIP, 
 		SEARCH_USER, 
@@ -75,6 +76,7 @@ public class ClientMessage extends AbstractMessage{
 		INVITE_ID,
 		EVENT,
 		WISH,
+		WISH_ID,
 		FRIENDSHIP,
 		USER_CREATED,
 		FB_IDS_LIST;
@@ -138,6 +140,13 @@ public class ClientMessage extends AbstractMessage{
 	public String getFacebookID() {
 		String facebookId= (String) getContent().get(ClientContentTypeKey.FB_ID.name());
 		return facebookId;
+	}
+    /**
+	 * @return
+	 */
+	public int getWishID() {
+		String facebookId= (String) getContent().get(ClientContentTypeKey.WISH_ID.name());
+		return Integer.parseInt(facebookId);
 	}
 
     /**

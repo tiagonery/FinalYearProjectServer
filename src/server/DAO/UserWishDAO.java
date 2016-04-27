@@ -53,8 +53,8 @@ public class UserWishDAO {
 	/**
 	 * @param facebookId
 	 */
-	public List<String> getAvailableWishes(String facebookId) {
-		List<String> wishesIdsList = new ArrayList<String>();
+	public List<Integer> getAvailableWishes(String facebookId) {
+		List<Integer> wishesIdsList = new ArrayList<Integer>();
 		String query = "SELECT * FROM "+ USERWISH_TABE +" WHERE "+USERWISH_USER_ID_COLUMN+" = '" + facebookId+"'";
 		ResultSet rs = null;
 		Wish wish = null;
@@ -63,7 +63,7 @@ public class UserWishDAO {
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			while (rs.next()) {
-				wishesIdsList.add((rs.getInt(USERWISH_WISH_ID_COLUMN))+"");
+				wishesIdsList.add((rs.getInt(USERWISH_WISH_ID_COLUMN)));
 			}
 		} catch (SQLException e) {
 			wishesIdsList = null;

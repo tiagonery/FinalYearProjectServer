@@ -248,6 +248,9 @@ public class MessageHandler {
 				case REQUEST_WISHES:
 					serverReplyMessage = core.getWishes(serverReplyMessage);
 					break; 
+				case REQUEST_USERS_WISH_LIST:
+					serverReplyMessage = core.getUsersWish(serverReplyMessage, clientMessage.getWishID());
+					break; 
 				case WANT_TO_GO_OUT:
 //					core.wantToGoOut(serverReplyMessage); //not implemented
 					break; 

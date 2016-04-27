@@ -4,7 +4,9 @@
 package server.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import server.DAO.EventDAO;
 import server.DAO.FriendshipDAO;
@@ -275,14 +277,25 @@ public class Core {
 	public ServerMessage getWishes(ServerMessage serverReplyMessage) {
 
 		List<Wish> wishesList = new ArrayList<Wish>();
-		List<String> wishesIdsList = new ArrayList<String>();
+		Set<Integer> wishesIdsList = new HashSet<Integer>();
 		WishDAO wishDao = new WishDAO();
 		UserWishDAO userWishDao = new UserWishDAO();
-		wishesIdsList = userWishDao.getAvailableWishes(getUserRequester().getFacebookId());
+		UserDAO userDAO = new UserDAO();
+
+		wishesIdsList.addAll(userWishDao.getAvailableWishes(getUserRequester().getFacebookId()));
+		for (String id : getFriendsIdsList(getUserRequester().getFacebookId())) {
+			wishesIdsList.addAll(userWishDao.getAvailableWishes(id));
+		}
+		
 		if (wishesIdsList != null) {
-			for (String id : wishesIdsList) {
+			for (Integer id : wishesIdsList) {
 				Wish wish = wishDao.getWish(id);
 				if(wish!=null){
+					User user = userDAO.getUserByFB(wish.getWishOwner().getFacebookId());
+					if(user!=null){
+						wish.setWishOwner(user.getUserWithoutPrivInfo());
+					}
+					
 					List<UserWish> userWishList = userWishDao.getUserWishesFromWish(wish.getWishId());
 					wish.setUserWishList(userWishList);
 					if(wish.getWishOwner().getFacebookId()!=getUserRequester().getFacebookId()){
@@ -309,6 +322,64 @@ public class Core {
 		
 	}
 	
+
+	/**
+	 * @param facebookId
+	 */
+	public ServerMessage getUsersWish(ServerMessage serverReplyMessage, int wishId) {
+		List<UserEvent> usersEventList;
+		WishDAO wishDAO = new WishDAO();
+		Wish wish = wishDAO.getWish(wishId);
+		List<User> usersList;
+		if (wish != null) {
+
+			UserWishDAO userWishDAO = new UserWishDAO();
+			List<UserWish> list = userWishDAO.getUserWishesFromWish(wishId);
+			if (list != null) {
+				usersList = new ArrayList<User>();
+				for (UserWish userWish : list) {
+					UserDAO userDAO = new UserDAO();
+					User user = userDAO.getUserByFB(userWish.getUserId());
+					if(user!=null){
+						user = user.getUserWithoutPrivInfo();
+						usersList.add(user);
+					}else{
+						System.out.println("Could not retrieve user with id:"+userWish.getUserId());
+					}
+				}
+
+				if (wish.getLinkedEvent() != null) {
+					UserEventDAO userEventDAO = new UserEventDAO();
+					usersEventList = userEventDAO.getUserEventsFromEvent(wish.getLinkedEvent().getEventId());
+					serverReplyMessage.setUsersEventList(usersEventList);
+				}
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+				serverReplyMessage.setUsersList(usersList);
+			} else {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+				serverReplyMessage.setErrorMessage("Error Retrienving UserWishList");
+
+			}
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving Wish");
+		}
+		return serverReplyMessage;
+
+	}
+	/**
+	 * @param facebookId
+	 */
+	private List<String> getFriendsIdsList(String facebookId) {
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		List<String> result = new ArrayList<String>();
+		List<String> list = friendshipDAO.getFriendsIds(facebookId);
+		if(list!=null){
+			result = list;
+		}
+		return result;
+		
+	}
 
 	/**
 	 * @param serverReplyMessage 
