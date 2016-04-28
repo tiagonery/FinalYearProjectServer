@@ -239,6 +239,9 @@ public class MessageHandler {
 				case JOIN_EVENT:
 //					core.joinEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
 					break; 
+				case JOIN_WISH:
+					serverReplyMessage = core.joinWish(serverReplyMessage, clientMessage.getWishID());
+					break; 
 				case LEAVE_EVENT:
 //					core.leaveEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
 					break; 

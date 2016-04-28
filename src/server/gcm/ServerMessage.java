@@ -21,6 +21,7 @@ import java.util.Map;
 import server.model.AppEvent;
 import server.model.User;
 import server.model.UserEvent;
+import server.model.UserWish;
 import server.model.Wish;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -58,6 +59,7 @@ public class ServerMessage extends AbstractMessage{
         USERS_EVENT_LIST,
         WISHES_LIST,
         USERS_WISH_LIST,
+        USERS_WISH,
 		WISH;
 		
 	}
@@ -157,13 +159,21 @@ public class ServerMessage extends AbstractMessage{
 		getContent().put(ServerContentTypeKey.EVENT.name(), string);
 		
 	}
-	
+
 	/**
 	 * @param from
 	 */
 	public void setWish(Wish wish) {
 		String string = getJsonValueOf(wish);
 		getContent().put(ServerContentTypeKey.WISH.name(), string);
+		
+	}
+	/**
+	 * @param from
+	 */
+	public void setUserWish(UserWish userWish) {
+		String string = getJsonValueOf(userWish);
+		getContent().put(ServerContentTypeKey.USERS_WISH.name(), string);
 		
 	}
 	

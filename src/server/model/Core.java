@@ -238,6 +238,24 @@ public class Core {
 
 	/**
 	 * @param serverReplyMessage 
+	 * @param eventID
+	 */
+	public ServerMessage joinWish(ServerMessage serverReplyMessage, int wishId) {
+		UserWishDAO userWishDAO = new UserWishDAO();
+		UserWish userWish = userWishDAO.createUserWish(getUserRequester().getFacebookId(), wishId);
+		if(userWish!=null){
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setUserWish(userWish);
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Could not create UserWish");
+		}
+		return serverReplyMessage;
+		
+	}
+
+	/**
+	 * @param serverReplyMessage 
 	 * @return 
 	 * 
 	 */

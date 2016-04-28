@@ -89,7 +89,7 @@ public class UserWishDAO {
 			connection = DAOManager.getConnection();
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
-			if (rs.next()) {
+			while (rs.next()) {
 				UserWish userWish = new UserWish(rs.getNString(USERWISH_USER_ID_COLUMN), rs.getInt(USERWISH_WISH_ID_COLUMN));
 				list.add(userWish);
 

@@ -33,11 +33,13 @@ public class UserWish implements Serializable{
     /**
      * @param userId
      * @param wishId
-     * @param state
      */
     public UserWish(String userId, int wishId) {
         this.userId = userId;
         this.wishId = wishId;
+    }
+
+    public UserWish() {
     }
 
     public String getUserId() {
