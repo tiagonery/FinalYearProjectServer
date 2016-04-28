@@ -14,10 +14,12 @@ import java.util.Date;
 import java.util.List;
 
 import server.model.AppEvent;
+import server.model.UserEvent;
 import server.model.Wish;
 import server.model.AppEvent.EventType;
 import server.model.User;
 import server.model.AppEvent.EventVisualizationPrivacy;
+import server.model.UserEvent.UserEventState;
 
 /**
  * @author Tiago
@@ -149,6 +151,30 @@ public class WishDAO /** extends AbstractDAO */
 			DbUtil.close(connection);
 		}
 		return result;
+	}
+	
+
+
+	/**
+	 * @param friendship
+	 * @return
+	 */
+	public boolean updateWishEvent(int wishId,int eventId) {
+		String query = "UPDATE "+ WISH_TABLE +" SET "+WISH_EVENT_ID_COLUMN+"= "+eventId+" WHERE "+WISH_ID_COLUMN+"= "+wishId+";";
+		connection = DAOManager.getConnection();
+		boolean worked = false;
+		try {
+			statement = connection.createStatement();
+			statement.executeUpdate(query);
+			worked = true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+
+		} finally {
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return worked;
 	}
 
 

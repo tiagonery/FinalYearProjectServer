@@ -356,13 +356,15 @@ public class Core {
 			if (list != null) {
 				usersList = new ArrayList<User>();
 				for (UserWish userWish : list) {
-					UserDAO userDAO = new UserDAO();
-					User user = userDAO.getUserByFB(userWish.getUserId());
-					if(user!=null){
-						user = user.getUserWithoutPrivInfo();
-						usersList.add(user);
-					}else{
-						System.out.println("Could not retrieve user with id:"+userWish.getUserId());
+					if (!userWish.getUserId().equals(getUserRequester().getFacebookId())) {
+						UserDAO userDAO = new UserDAO();
+						User user = userDAO.getUserByFB(userWish.getUserId());
+						if (user != null) {
+							user = user.getUserWithoutPrivInfo();
+							usersList.add(user);
+						} else {
+							System.out.println("Could not retrieve user with id:" + userWish.getUserId());
+						}
 					}
 				}
 
@@ -473,7 +475,7 @@ public class Core {
 	 * @param event
 	 * @return
 	 */
-	public ServerMessage createEvent(ServerMessage serverReplyMessage, AppEvent event, List<String> fbIdsList) {
+	public ServerMessage createEvent(ServerMessage serverReplyMessage, AppEvent event, List<String> fbIdsList, int wishId) {
 		EventDAO dao = new EventDAO();
 		FriendshipDAO friendshipDAO = new FriendshipDAO();
 		event.setEventOwner(getUserRequester());
@@ -486,6 +488,15 @@ public class Core {
 			List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
 			List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, fbIdsList);
 			addUserEventAsIdle(event, listToNotify);
+			
+			if(wishId!=-1){
+				WishDAO wishDAO = new WishDAO();
+				if(wishDAO.updateWishEvent(wishId, newEvent.getEventId())){
+					
+				}else{
+					System.out.println("Could not Update Wish with new EventId");
+				}
+			}
 
 			// }
 		} else {
@@ -615,6 +626,34 @@ private void sendNewWishAvailableNotification(String regId, Wish wish) {
 		union.removeAll(intersection);
 		return union;
 	}
+
+/**
+ * @param serverReplyMessage
+ * @return
+ */
+public ServerMessage getUsersForNewEvent(ServerMessage serverReplyMessage) {
+	FriendshipDAO friendshipDAO = new FriendshipDAO();
+	List<String> list = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+	List<User> usersList = new ArrayList<User>();
+	if(list!=null){
+		UserDAO userDAO = new UserDAO();
+		for (String id : list) {
+			User user = userDAO.getUserByFB(id);
+			if(user!=null){
+				usersList.add(user);
+			}else{
+				System.out.println("Could not retrieve user with id:"+id);
+			}
+		}
+
+		serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+		serverReplyMessage.setUsersList(usersList);
+	}else{
+		serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+		serverReplyMessage.setErrorMessage("Couldn't get list of friends");
+	}
+	return serverReplyMessage;
+}
 	
 
 }

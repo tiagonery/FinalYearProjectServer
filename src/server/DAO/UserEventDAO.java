@@ -86,18 +86,16 @@ public class UserEventDAO {
 	 */
 	public UserEvent updateUserEventStatus(String userId,int eventId, UserEventState state) {
 		String query = "UPDATE "+ USEREVENT_TABE +" SET "+USEREVENT_STATE_COLUMN+"= '"+state.getNumber()+"' WHERE "+USEREVENT_USER_ID_COLUMN+"= '"+userId+"' AND "+USEREVENT_EVENT_ID_COLUMN+"='"+eventId+"';";
-		ResultSet rs = null;
 		connection = DAOManager.getConnection();
 		UserEvent userEvent = null;
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.executeUpdate(query);
 			userEvent = new UserEvent(userId, eventId, state);
 		} catch (SQLException e) {
 			e.printStackTrace();
 
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}

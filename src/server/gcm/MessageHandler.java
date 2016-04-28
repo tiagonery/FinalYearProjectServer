@@ -219,7 +219,7 @@ public class MessageHandler {
 //					core.removeFriend(serverReplyMessage, clientMessage.getFacebookID()); //not implemented
 					break; 
 				case CREATE_EVENT:
-					serverReplyMessage = core.createEvent(serverReplyMessage, clientMessage.getEvent(), clientMessage.getFacebookIdsList());
+					serverReplyMessage = core.createEvent(serverReplyMessage, clientMessage.getEvent(), clientMessage.getFacebookIdsList(), clientMessage.getWishID());
 					break;
 				case CREATE_WISH:
 					serverReplyMessage = core.createWish(serverReplyMessage, clientMessage.getWish());
@@ -247,6 +247,9 @@ public class MessageHandler {
 					break; 
 				case REQUEST_EVENTS:
 					serverReplyMessage = core.getEvents(serverReplyMessage);
+					break; 
+				case REQUEST_USERS_NEW_EVENT_LIST:
+					serverReplyMessage = core.getUsersForNewEvent(serverReplyMessage);
 					break; 
 				case REQUEST_WISHES:
 					serverReplyMessage = core.getWishes(serverReplyMessage);
