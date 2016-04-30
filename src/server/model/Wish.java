@@ -6,6 +6,7 @@ package server.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import server.model.UserEvent.UserEventState;
@@ -131,11 +132,11 @@ public class Wish implements Serializable{
 
 	
     @JsonIgnore
-	public Wish getWishAsNonOwner(String currentUserId) {
+	public Wish getWishWithStrippedUserWishList(String currentUserId) {
     	Wish result = this;
-    	for (int i = 0; i < getUserWishList().size(); i++) {
-			if(getUserWishList().get(i).getUserId()!=currentUserId){
-				result.getUserWishList().remove(i);
+        for(Iterator<UserWish> iterator = getUserWishList().iterator(); iterator.hasNext();) {
+			if(!iterator.next().getUserId().equals(currentUserId)){
+				iterator.remove();
 			}
 		}
     	return result;

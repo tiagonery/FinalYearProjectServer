@@ -80,6 +80,7 @@ public class ClientMessage extends AbstractMessage{
 		EVENT,
 		WISH,
 		WISH_ID,
+		EVENT_ID,
 		FRIENDSHIP,
 		USER_CREATED,
 		FB_IDS_LIST;
@@ -148,8 +149,15 @@ public class ClientMessage extends AbstractMessage{
 	 * @return
 	 */
 	public int getWishID() {
-		String facebookId= (String) getContent().get(ClientContentTypeKey.WISH_ID.name());
-		return Integer.parseInt(facebookId);
+		String wishId= (String) getContent().get(ClientContentTypeKey.WISH_ID.name());
+		return Integer.parseInt(wishId);
+	}
+    /**
+	 * @return
+	 */
+	public int getEventId() {
+		String eventId= (String) getContent().get(ClientContentTypeKey.EVENT_ID.name());
+		return Integer.parseInt(eventId);
 	}
 
     /**

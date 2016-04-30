@@ -262,19 +262,25 @@ public class Core {
 	public ServerMessage getEvents(ServerMessage serverReplyMessage) {
 
 		List<AppEvent> eventsList = new ArrayList<AppEvent>();
-		List<String> eventsIdsList = new ArrayList<String>();
+		List<Integer> eventsIdsList = new ArrayList<Integer>();
 		EventDAO eventDao = new EventDAO();
 		UserEventDAO userEventDao = new UserEventDAO();
 		eventsIdsList = userEventDao.getAvailableEvents(getUserRequester().getFacebookId());
 		if (eventsIdsList != null) {
-			for (String id : eventsIdsList) {
+			for (int id : eventsIdsList) {
 				AppEvent event = eventDao.getEvent(id);
 				if(event!=null){
-					event.setUserEventList(userEventDao.getUserEventsFromEvent(event.getEventId()));
-					eventsList.add(event.getEventWithoutPrivateInfo(getUserRequester().getFacebookId()));
+					UserEvent userEvent = userEventDao.getUserEvent(getUserRequester().getFacebookId(), event.getEventId());
+					List<UserEvent> userEventsList = new ArrayList<UserEvent>();
+					if(userEvent!=null){
+						userEventsList.add(userEvent);
+					}else{
+						
+					}
+					event.setUserEventList(userEventsList);
+					eventsList.add(event);
 				}else{
-					serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
-					serverReplyMessage.setErrorMessage("Error Retrieving a specific event");
+					System.out.println("Error Retrieving event with ID: "+id);
 					
 				}
 			}
@@ -316,9 +322,9 @@ public class Core {
 					
 					List<UserWish> userWishList = userWishDao.getUserWishesFromWish(wish.getWishId());
 					wish.setUserWishList(userWishList);
-					if(wish.getWishOwner().getFacebookId()!=getUserRequester().getFacebookId()){
-						wish = wish.getWishAsNonOwner(getUserRequester().getFacebookId());
-					}
+//					if(wish.getWishOwner().getFacebookId()!=getUserRequester().getFacebookId()){
+					wish = wish.getWishWithStrippedUserWishList(getUserRequester().getFacebookId());
+//					}
 					wishesList.add(wish);
 				}else{
 					serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
@@ -526,7 +532,7 @@ public class Core {
 			for (String id : friendshipIdsList) {
 				User user = userDAO.getUserByFB(id);
 				if(user!=null){
-					sendNewWishAvailableNotification(user.getRegId(), newWish.getWishAsNonOwner(user.getFacebookId()));
+					sendNewWishAvailableNotification(user.getRegId(), newWish.getWishWithStrippedUserWishList(user.getFacebookId()));
 				}
 				
 			}
@@ -654,6 +660,79 @@ public ServerMessage getUsersForNewEvent(ServerMessage serverReplyMessage) {
 	}
 	return serverReplyMessage;
 }
-	
+
+	/**
+	 * @param serverReplyMessage
+	 * @return
+	 */
+	public ServerMessage getUsersEventList(ServerMessage serverReplyMessage, int eventId) {
+		UserEventDAO userEventDAO = new UserEventDAO();
+		EventDAO eventDAO = new EventDAO();
+		AppEvent event = eventDAO.getEvent(eventId);
+
+		List<UserEvent> list = userEventDAO.getUserEventsFromEvent(eventId);
+		List<User> usersList = new ArrayList<User>();
+		if (list != null) {
+			list = removePrivateInfoFromUserEventList(list, getUserRequester().getFacebookId());
+			if (event.getEventOwner().getFacebookId().equals(getUserRequester().getFacebookId())) {
+				FriendshipDAO friendshipDAO = new FriendshipDAO();
+				List<String> usersIds = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+				if(usersIds!=null){
+					for (String useriId : usersIds) {
+						UserDAO userDAO = new UserDAO();
+						User user = userDAO.getUserByFB(useriId);
+						if (user != null) {
+							usersList.add(user);
+						} else {
+							System.out.println("couldnt retrieve user with id: " + useriId);
+						}
+					}
+					
+				}else{
+					System.out.println("Could not retrieve friends ids");
+				}
+			} else {
+				for (UserEvent userEvent : list) {
+					UserDAO userDAO = new UserDAO();
+					User user = userDAO.getUser(userEvent.getUserId());
+					if (user != null) {
+						usersList.add(user);
+					} else {
+						System.out.println("couldnt retrieve user with id: " + userEvent.getUserId());
+					}
+
+				}
+			}
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setUsersList(usersList);
+			serverReplyMessage.setUsersEventList(list);
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't get list of UserEvent");
+			System.out.println("Couldn't get list of UserEvent");
+		}
+		return serverReplyMessage;
+}
+
+/**
+ * @param list
+ * @param facebookId
+ * @return
+ */
+	private List<UserEvent> removePrivateInfoFromUserEventList(List<UserEvent> list, String facebookId) {
+		List<UserEvent> result = new ArrayList<UserEvent>();
+		UserEvent currentUserEvent = new UserEvent();
+		for (UserEvent userEvent : list) {
+			if (userEvent.getUserId().equals(facebookId)) {
+				currentUserEvent = userEvent;
+			}
+		}
+		for (UserEvent userEvent : list) {
+			if (currentUserEvent.getState() == UserEventState.OWNER|| userEvent.getState() == UserEventState.OWNER || userEvent.getState() == UserEventState.GOING || userEvent.getUserId().equals(facebookId)) {
+				result.add(userEvent);
+			}
+		}
+		return result;
+	}
 
 }

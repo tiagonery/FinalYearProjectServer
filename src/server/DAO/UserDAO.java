@@ -55,8 +55,8 @@ public class UserDAO /** extends AbstractDAO */
 	// }
 	//
 
-	public User getUser(String userId)  {
-		String query = "SELECT * FROM user WHERE "+USER_ID_COLUMN+" = '" + userId+"'";
+	public User getUser(String userRegId)  {
+		String query = "SELECT * FROM user WHERE "+USER_ID_COLUMN+" = '" + userRegId+"'";
 		ResultSet rs = null;
 		User user = null;
 		try {
@@ -64,7 +64,7 @@ public class UserDAO /** extends AbstractDAO */
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			if (rs.next()) {
-				user = new User(userId,rs.getNString(USER_FACEBOOK_ID_COLUMN),rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
+				user = new User(userRegId,rs.getNString(USER_FACEBOOK_ID_COLUMN),rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

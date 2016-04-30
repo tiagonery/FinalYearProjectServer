@@ -66,8 +66,8 @@ public class EventDAO /** extends AbstractDAO */
 	// }
 	//
 
-	public AppEvent getEvent(String eventId)  {
-		String query = "SELECT * FROM "+EVENT_TABE+" WHERE "+EVENT_ID_COLUMN+" = '" + eventId+"'";
+	public AppEvent getEvent(int eventId)  {
+		String query = "SELECT * FROM "+EVENT_TABE+" WHERE "+EVENT_ID_COLUMN+" = " + eventId+"";
 		ResultSet rs = null;
 		AppEvent event = null;
 		try {
@@ -77,7 +77,7 @@ public class EventDAO /** extends AbstractDAO */
 			if (rs.next()) {
 				User user = new User();
 				user.setFacebookId(rs.getNString(EVENT_CREATOR_FACEBOOK_ID_COLUMN));
-				event = new AppEvent(rs.getInt(EVENT_ID_COLUMN), rs.getNString(EVENT_NAME), rs.getDate(EVENT_DATETIME_COLUMN), rs.getNString(EVENT_LOCATION_COLUMN), user, EventType.valueOf(rs.getInt(EVENT_ACTIVITY_COLUMN)));
+				event = new AppEvent(rs.getInt(EVENT_ID_COLUMN), rs.getNString(EVENT_NAME), new Date(rs.getTimestamp(EVENT_DATETIME_COLUMN).getTime()), rs.getNString(EVENT_LOCATION_COLUMN), user, EventType.valueOf(rs.getInt(EVENT_ACTIVITY_COLUMN)));
 
 			}
 		} catch (SQLException e) {

@@ -56,8 +56,8 @@ public class UserEventDAO {
 	/**
 	 * @param facebookId
 	 */
-	public List<String> getAvailableEvents(String facebookId) {
-		List<String> eventsIdsList = new ArrayList<String>();
+	public List<Integer> getAvailableEvents(String facebookId) {
+		List<Integer> eventsIdsList = new ArrayList<Integer>();
 		String query = "SELECT * FROM "+ USEREVENT_TABE +" WHERE "+USEREVENT_USER_ID_COLUMN+" = '" + facebookId+"' AND "+USEREVENT_STATE_COLUMN+" IN ("+UserEventState.GOING.getNumber()+","+UserEventState.OWNER.getNumber()+","+UserEventState.INVITED.getNumber()+") ORDER BY "+USEREVENT_STATE_COLUMN+";";
 		ResultSet rs = null;
 		AppEvent event = null;
@@ -66,7 +66,7 @@ public class UserEventDAO {
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			while (rs.next()) {
-				eventsIdsList.add((rs.getInt(USEREVENT_EVENT_ID_COLUMN))+"");
+				eventsIdsList.add((rs.getInt(USEREVENT_EVENT_ID_COLUMN)));
 			}
 		} catch (SQLException e) {
 			eventsIdsList = null;
@@ -114,7 +114,7 @@ public class UserEventDAO {
 			connection = DAOManager.getConnection();
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
-			if (rs.next()) {
+			while (rs.next()) {
 				UserEvent userEvent = new UserEvent(rs.getNString(USEREVENT_USER_ID_COLUMN), rs.getInt(USEREVENT_EVENT_ID_COLUMN), UserEventState.valueOf(rs.getInt(USEREVENT_STATE_COLUMN)));
 				list.add(userEvent);
 
@@ -128,5 +128,33 @@ public class UserEventDAO {
 			DbUtil.close(connection);
 		}
 		return list;
+	}
+
+/**
+ * @param eventId
+ * @return
+ */
+	public UserEvent getUserEvent(String userId, int eventId) {
+		String query = "SELECT * FROM " + USEREVENT_TABE + " WHERE " + USEREVENT_EVENT_ID_COLUMN + " = " + eventId + " AND " + USEREVENT_USER_ID_COLUMN
+				+ " = '" + userId + "';";
+		ResultSet rs = null;
+		UserEvent userEvent = null;
+		try {
+			connection = DAOManager.getConnection();
+			statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			if (rs.next()) {
+				userEvent = new UserEvent(rs.getNString(USEREVENT_USER_ID_COLUMN), rs.getInt(USEREVENT_EVENT_ID_COLUMN), UserEventState.valueOf(rs
+						.getInt(USEREVENT_STATE_COLUMN)));
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs);
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return userEvent;
 	}
 }

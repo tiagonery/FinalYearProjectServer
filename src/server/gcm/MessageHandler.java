@@ -248,6 +248,9 @@ public class MessageHandler {
 				case REQUEST_EVENTS:
 					serverReplyMessage = core.getEvents(serverReplyMessage);
 					break; 
+				case REQUEST_USERS_EVENT_LIST:
+					serverReplyMessage = core.getUsersEventList(serverReplyMessage, clientMessage.getEventId());
+					break; 
 				case REQUEST_USERS_NEW_EVENT_LIST:
 					serverReplyMessage = core.getUsersForNewEvent(serverReplyMessage);
 					break; 
