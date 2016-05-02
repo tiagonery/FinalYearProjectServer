@@ -46,7 +46,10 @@ public class ClientMessage extends AbstractMessage{
 		DELETE_USER, 
 		EDIT_CONFIG, 
 		REQUEST_FRIENDSHIP_USERNAME, 
-		REQUEST_FRIENDSHIP_FB, 
+		REQUEST_FRIENDSHIP_FB_IDS_LIST, 
+		REQUEST_FRIENDSHIP_FB_ID,
+		REQUEST_FRIENDS_LIST,
+		REQUEST_FRIENDS_IDS_LIST,
 		REQUEST_USERS_WISH_LIST,
 		REQUEST_USERS_EVENT_LIST,
 		REQUEST_USERS_NEW_EVENT_LIST,
@@ -58,6 +61,7 @@ public class ClientMessage extends AbstractMessage{
 		CREATE_WISH, 
 		DELETE_WISH,
 		EDIT_EVENT, 
+		DELETE_EVENT,
 		INVITE_TO_EVENT, 
 		ACCEPT_INVITE, 
 		REFUSE_INVITE,
@@ -83,6 +87,7 @@ public class ClientMessage extends AbstractMessage{
 		EVENT_ID,
 		FRIENDSHIP,
 		USER_CREATED,
+		USER_NAME,
 		FB_IDS_LIST;
 	}
 	
@@ -148,6 +153,13 @@ public class ClientMessage extends AbstractMessage{
     /**
 	 * @return
 	 */
+	public String getUserName() {
+		String userName= (String) getContent().get(ClientContentTypeKey.USER_NAME.name());
+		return userName;
+	}
+    /**
+	 * @return
+	 */
 	public int getWishID() {
 		String wishId= (String) getContent().get(ClientContentTypeKey.WISH_ID.name());
 		return Integer.parseInt(wishId);
@@ -180,7 +192,7 @@ public class ClientMessage extends AbstractMessage{
 	/**
 	 * @return
 	 */
-	public Friendship getFriendshipRequest() {
+	public Friendship getFriendship() {
 		String json = (String) getContent().get(ClientContentTypeKey.FRIENDSHIP.name());
 		ObjectMapper mapper = new ObjectMapper();
 	    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, true);

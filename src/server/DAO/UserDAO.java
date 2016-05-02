@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import server.model.User;
 
@@ -63,7 +65,7 @@ public class UserDAO /** extends AbstractDAO */
 			connection = DAOManager.getConnection();
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
-			if (rs.next()) {
+			while (rs.next()) {
 				user = new User(userRegId,rs.getNString(USER_FACEBOOK_ID_COLUMN),rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
 			}
 		} catch (SQLException e) {
@@ -107,18 +109,16 @@ public class UserDAO /** extends AbstractDAO */
 	 * @return
 	 */
 	public boolean deleteUser(String id) {
-		String query = "DELETE FROM table"+USER_TABE+"WHERE"+USER_ID_COLUMN+"='"+id+"';";
-		ResultSet rs = null;
+		String query = "DELETE FROM "+USER_TABE+" WHERE "+USER_ID_COLUMN+" = '"+id+"';";
 		boolean result = true;
 		connection = DAOManager.getConnection();
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.execute(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			result = false;
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}
@@ -137,7 +137,7 @@ public class UserDAO /** extends AbstractDAO */
 			connection = DAOManager.getConnection();
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
-			if (rs.next()) {
+			while (rs.next()) {
 				user = new User(rs.getNString(USER_ID_COLUMN),facebookID,rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
 			}
 		} catch (SQLException e) {
@@ -149,6 +149,37 @@ public class UserDAO /** extends AbstractDAO */
 			DbUtil.close(connection);
 		}
 		return user;
+	}
+
+	/**
+	 * @param userName
+	 * @return
+	 */
+	public List<User> getUserListByName(String userName) {
+		String query = "SELECT * FROM user WHERE UPPER("+USER_NAME_COLUMN+") LIKE UPPER('%" + userName+"%')";
+		ResultSet rs = null;
+		List<User> usersList = new ArrayList<User>();
+		try {
+			connection = DAOManager.getConnection();
+			statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			while (rs.next()) {
+				User user = new User(rs.getNString(USER_ID_COLUMN),rs.getNString(USER_FACEBOOK_ID_COLUMN),rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
+				if(user!=null){
+					usersList.add(user);
+				}else{
+					System.out.println("could not create a User");
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs);
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return usersList;
 	}
 
 

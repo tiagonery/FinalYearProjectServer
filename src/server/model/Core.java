@@ -156,8 +156,20 @@ public class Core {
 	 * @param facebookID
 	 */
 	public void removeFriend(ServerMessage serverReplyMessage, String facebookID) {
-		// TODO Auto-generated method stub
 		
+	}
+	
+	public ServerMessage inviteToEvent(ServerMessage serverReplyMessage, List<String> facebookIDsList, int eventId) {
+		EventDAO eventDAO = new EventDAO();
+		AppEvent event = eventDAO.getEvent(eventId);
+		if(event!=null){
+			inviteToEvent(facebookIDsList, event);
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't delete Event");
+		}
+	return serverReplyMessage;
 	}
 
 	/**
@@ -166,6 +178,7 @@ public class Core {
 	public void inviteToEvent(List<String> facebookIDsList, AppEvent event) {
 		UserEventDAO dao= new UserEventDAO();
 		UserDAO userDao = new UserDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
 		for (String id : facebookIDsList) {
 			UserEvent userEvent = dao.createUserEvent(id, event.getEventId(), UserEventState.INVITED);
 			if(userEvent!=null){
@@ -187,6 +200,9 @@ public class Core {
 		}
 			
 		}
+//		List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+//		List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, facebookIDsList);
+//		addUserEventAsIdle(event, listToNotify);
 				
 	}
 
@@ -222,8 +238,15 @@ public class Core {
 	 * @param serverReplyMessage 
 	 * @param eventID
 	 */
-	public void leaveEvent(ServerMessage serverReplyMessage, int eventID) {
-		// TODO Auto-generated method stub
+	public ServerMessage leaveEvent(ServerMessage serverReplyMessage, int eventID) {
+		UserEventDAO userEventDAO = new UserEventDAO();
+		if(userEventDAO.updateUserEventStatus(getUserRequester().getFacebookId(), eventID, UserEventState.NOT_GOING)!=null){
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Could not update UserEvent status");
+		}
+		return serverReplyMessage;
 		
 	}
 
@@ -231,9 +254,15 @@ public class Core {
 	 * @param serverReplyMessage 
 	 * @param eventID
 	 */
-	public void joinEvent(ServerMessage serverReplyMessage, int eventID) {
-		// TODO Auto-generated method stub
-		
+	public ServerMessage joinEvent(ServerMessage serverReplyMessage, int eventID) {
+		UserEventDAO userEventDAO = new UserEventDAO();
+		if(userEventDAO.updateUserEventStatus(getUserRequester().getFacebookId(), eventID, UserEventState.GOING)!=null){
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Could not update UserEvent status");
+		}
+		return serverReplyMessage;
 	}
 
 	/**
@@ -296,6 +325,129 @@ public class Core {
 		return serverReplyMessage;
 		
 		
+	}
+
+	/**
+	 * @param serverReplyMessage
+	 * @return
+	 * 
+	 */
+	public ServerMessage getFriendsList(ServerMessage serverReplyMessage) {
+
+		List<User> friendsList = new ArrayList<User>();
+		List<Friendship> friendshipList = new ArrayList<Friendship>();
+		UserDAO userDao = new UserDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		friendshipList = friendshipDAO.getAllFriendships(getUserRequester().getFacebookId());
+		if (friendshipList != null) {
+			for (Friendship friendship : friendshipList) {
+				User user = null;
+				if (friendship.getUser1Id().equals(getUserRequester().getFacebookId())) {
+					user = userDao.getUserByFB(friendship.getUser2Id());
+				} else {
+					user = userDao.getUserByFB(friendship.getUser1Id());
+				}
+				if (user != null) {
+					if (friendship.getState() != FriendshipState.REQUEST_REFUSED) {
+						user = user.getUserWithoutPrivInfo();
+						friendsList.add(user);
+					}
+				}
+
+			}
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setUsersList(friendsList);
+			serverReplyMessage.setFriendshipList(friendshipList);
+
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving List of Friendship");
+		}
+
+		return serverReplyMessage;
+
+	}
+	/**
+	 * @param serverReplyMessage
+	 * @return
+	 * 
+	 */
+	public ServerMessage getUsersByName(ServerMessage serverReplyMessage, String userName) {
+
+		List<User> usersList = new ArrayList<User>();
+		List<Friendship> friendshipList = new ArrayList<Friendship>();
+		UserDAO userDao = new UserDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		friendshipList = friendshipDAO.getAllFriendships(getUserRequester().getFacebookId());
+		if (friendshipList != null) {
+//			for (Friendship friendship : friendshipList) {
+//				User user = null;
+//				if (friendship.getUser1Id().equals(getUserRequester().getFacebookId())) {
+//					user = userDao.getUserByFB(friendship.getUser2Id());
+//				} else {
+//					user = userDao.getUserByFB(friendship.getUser1Id());
+//				}
+//				if (user != null) {
+//					if (friendship.getState() != FriendshipState.REQUEST_REFUSED) {
+//						user = user.getUserWithoutPrivInfo();
+//						friendsList.add(user);
+//					}
+//				}
+
+//			}
+			usersList = userDao.getUserListByName(userName);
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setUsersList(usersList);
+			serverReplyMessage.setFriendshipList(friendshipList);
+
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving List of Friendship");
+		}
+
+		return serverReplyMessage;
+
+	}
+	
+
+	
+	/**
+	 * @param serverReplyMessage
+	 * @return
+	 * 
+	 */
+	public ServerMessage getFriendshipIdsList(ServerMessage serverReplyMessage) {
+
+		List<String> friendsIdsList = new ArrayList<String>();
+		List<Friendship> friendshipList = new ArrayList<Friendship>();
+		UserDAO userDao = new UserDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		friendshipList = friendshipDAO.getAllFriendships(getUserRequester().getFacebookId());
+		if (friendshipList != null) {
+			for (Friendship friendship : friendshipList) {
+				User user = null;
+				if (friendship.getUser1Id().equals(getUserRequester().getFacebookId())) {
+					user = userDao.getUserByFB(friendship.getUser2Id());
+				} else {
+					user = userDao.getUserByFB(friendship.getUser1Id());
+				}
+				if (user != null) {
+					if (friendship.getState() != FriendshipState.REQUEST_REFUSED) {
+						friendsIdsList.add(user.getFacebookId());
+					}
+				}
+
+			}
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			serverReplyMessage.setUsersIdsList(friendsIdsList);
+
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Error Retrienving List of Friendship");
+		}
+
+		return serverReplyMessage;
+
 	}
 	
 	public ServerMessage getWishes(ServerMessage serverReplyMessage) {
@@ -443,17 +595,19 @@ public class Core {
 	 * @param serverReplyMessage
 	 * @param facebookID
 	 */
-	public void acceptFriendship(ServerMessage serverReplyMessage, Friendship friendship) {
+	public ServerMessage acceptFriendship(ServerMessage serverReplyMessage, Friendship friendship) {
 		FriendshipDAO friendshipDao = new FriendshipDAO();
-		if(friendshipDao.acceptFriendship(friendship).getState()== FriendshipState.REQUEST_ACCEPTED){
+		if(friendshipDao.acceptFriendship(friendship)!=null){
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 
 			sendFriendshipRequestAcceptedNotification(friendship.getUser1Id(), getUserRequester());
 			
 		}else{
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
-			serverReplyMessage.setErrorMessage("Couldn't delete User");
+			serverReplyMessage.setErrorMessage("Couldn't accept Friendship");
 		}
+		
+		return serverReplyMessage;
 		
 	}
 
@@ -461,8 +615,16 @@ public class Core {
 	 * 
 	 */
 	private void sendFriendshipRequestAcceptedNotification(String to, User from) {
-		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_RECEIVED);
+		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_ACCEPTED);
 		serverNotificationMessage.setFriendshipRequestAcceptedFrom(from.getFacebookId());
+		sendNotification(serverNotificationMessage);
+	}
+
+	/**
+	 * 
+	 */
+	private void sendFriendshipRequestRefusedNotification(String to, User from) {
+		ServerMessage serverNotificationMessage = new ServerMessage(to, ServerMessageType.NOTIFY_FRIENDSHIP_REQUEST_REFUSED);
 		sendNotification(serverNotificationMessage);
 	}
 
@@ -470,9 +632,19 @@ public class Core {
 	 * @param serverReplyMessage
 	 * @param facebookID
 	 */
-	public void refuseFriendship(ServerMessage serverReplyMessage, String facebookID) {
-		// TODO Auto-generated method stub
+	public ServerMessage refuseFriendship(ServerMessage serverReplyMessage, Friendship friendship) {
+		FriendshipDAO friendshipDao = new FriendshipDAO();
+		if(friendshipDao.refuseFriendship(friendship)!=null){
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+
+			sendFriendshipRequestRefusedNotification(friendship.getUser1Id(), getUserRequester());
+			
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't refuse Friendship");
+		}
 		
+		return serverReplyMessage;
 	}
 
 	/**
@@ -490,10 +662,6 @@ public class Core {
 			createOwnerUserEvent(getUserRequester().getFacebookId(), newEvent.getEventId());
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
 			inviteToEvent(fbIdsList, newEvent);
-			// if(newEvent.getEventVisualizationPrivacy()==EventVisualizationPrivacy.ALL_FRIENDS){
-			List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
-			List<String> listToNotify = removeInvitedUsersFromList(friendshipIdsList, fbIdsList);
-			addUserEventAsIdle(event, listToNotify);
 			
 			if(wishId!=-1){
 				WishDAO wishDAO = new WishDAO();
@@ -544,6 +712,118 @@ public class Core {
 		}
 		return serverReplyMessage;
 	}
+
+	/**
+	 * @param serverReplyMessage
+	 * @param messageId
+	 * @param event
+	 * @return
+	 */
+	public ServerMessage deleteWish(ServerMessage serverReplyMessage, int wishId) {
+		WishDAO wishDao = new WishDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		UserDAO userDAO = new UserDAO();
+		UserWishDAO userWishDAO = new UserWishDAO();
+		if(userWishDAO.deleteUserWishesByWishId(wishId)){
+			if(wishDao.deleteWish(wishId)){
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+
+				List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+				for (String id : friendshipIdsList) {
+					User user = userDAO.getUserByFB(id);
+					if(user!=null){
+						sendWishDeletedNotification(user.getRegId());
+					}
+				}
+				
+			}else{
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+				serverReplyMessage.setErrorMessage("Couldn't delete Wish");
+				System.out.println("Couldn't delete UserWish");
+			}
+		}else{
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't delete UserWishes");
+			System.out.println("Couldn't delete UserWishes");
+		}
+		return serverReplyMessage;
+	}
+
+	/**
+	 * @param serverReplyMessage
+	 * @param messageId
+	 * @param event
+	 * @return
+	 */
+	public void deleteWish(int wishId) {
+		WishDAO wishDao = new WishDAO();
+		FriendshipDAO friendshipDAO = new FriendshipDAO();
+		UserDAO userDAO = new UserDAO();
+		UserWishDAO userWishDAO = new UserWishDAO();
+		if(userWishDAO.deleteUserWishesByWishId(wishId)){
+			if(wishDao.deleteWish(wishId)){
+				List<String> friendshipIdsList = friendshipDAO.getFriendsIds(getUserRequester().getFacebookId());
+				for (String id : friendshipIdsList) {
+					User user = userDAO.getUserByFB(id);
+					if(user!=null){
+						sendWishDeletedNotification(user.getRegId());
+					}else{
+						System.out.println("coul not retrieve user with id: "+id);
+					}
+				}
+				
+			}else{
+				System.out.println("Couldn't delete UserWish");
+			}
+		}else{
+			System.out.println("Couldn't delete UserWishes");
+		}
+	}
+	
+	/**
+	 * @param serverReplyMessage
+	 * @param messageId
+	 * @param event
+	 * @return
+	 */
+	public ServerMessage deleteEvent(ServerMessage serverReplyMessage, int eventId) {
+		EventDAO eventDao = new EventDAO();
+		UserEventDAO userEventDAO = new UserEventDAO();
+		WishDAO wishDAO = new WishDAO();
+		UserDAO userDAO = new UserDAO();
+		int wishId = wishDAO.getWishIdByEventId(eventId);
+		if (wishId != -1) {
+			deleteWish(wishId);
+		}
+		List<UserEvent> userEvents = userEventDAO.getUserEventsFromEvent(eventId);
+		if (userEventDAO.deleteUserEventsByEventId(eventId)) {
+			if (eventDao.deleteEvent(eventId)) {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+				for (UserEvent userEvent : userEvents) {
+					User user = userDAO.getUserByFB(userEvent.getUserId());
+					if (user != null) {
+						sendEventDeletedNotification(user.getRegId());
+					} else {
+						System.out.println("coul not retrieve user with id: " + userEvent.getUserId());
+					}
+				}
+			} else {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+				serverReplyMessage.setErrorMessage("Couldn't delete Event");
+				System.out.println("Couldn't delete Event");
+
+			}
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("Couldn't delete UserEvents");
+			System.out.println("Couldn't delete UserEvents");
+
+		}
+		return serverReplyMessage;
+	}
+			
+			
+		
 
 	/**
 	 * @param facebookId
@@ -612,6 +892,24 @@ private void sendNewEventAvailableNotification(String regId, AppEvent event) {
 private void sendNewWishAvailableNotification(String regId, Wish wish) {
 	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_NEW_WISH_AVAILABLE);
 	serverNotificationMessage.setWish(wish);
+	sendNotification(serverNotificationMessage);
+	
+}
+
+/**
+ * @param regId
+ */
+private void sendWishDeletedNotification(String regId) {
+	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_WISH_DELETED);
+	sendNotification(serverNotificationMessage);
+	
+}
+
+/**
+ * @param regId
+ */
+private void sendEventDeletedNotification(String regId) {
+	ServerMessage serverNotificationMessage = new ServerMessage(regId, ServerMessageType.NOTIFY_NEW_WISH_AVAILABLE);
 	sendNotification(serverNotificationMessage);
 	
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import server.model.AppEvent;
+import server.model.Friendship;
 import server.model.User;
 import server.model.UserEvent;
 import server.model.UserWish;
@@ -40,9 +41,13 @@ public class ServerMessage extends AbstractMessage{
 		REPLY_SUCCES,
 		REPLY_ERROR,
 		NOTIFY_FRIENDSHIP_REQUEST_RECEIVED,
+		NOTIFY_FRIENDSHIP_REQUEST_ACCEPTED,
+		NOTIFY_FRIENDSHIP_REQUEST_REFUSED,
 		NOTIFY_INVITATION_RECEIVED, 
 		NOTIFY_NEW_EVENTAVAILABLE,
-		NOTIFY_NEW_WISH_AVAILABLE;
+		NOTIFY_NEW_WISH_AVAILABLE,
+		NOTIFY_WISH_DELETED,
+		NOTIFY_EVENT_DELETED;
 
 	}
 	
@@ -53,9 +58,11 @@ public class ServerMessage extends AbstractMessage{
 		ERROR_MESSAGE,
 		FRIENDSHIP_REQUEST_FROM,
 		FRIENDSHIP_REQUEST_ACCEPTED_FROM,
+		FRIENDSHIP_LIST,
 		EVENTS_LIST,
 		EVENT,
         USERS_LIST,
+        USERS_IDS_LIST,
         USERS_EVENT_LIST,
         WISHES_LIST,
         USERS_WISH_LIST,
@@ -176,6 +183,14 @@ public class ServerMessage extends AbstractMessage{
 		getContent().put(ServerContentTypeKey.USERS_WISH.name(), string);
 		
 	}
+	/**
+	 * @param from
+	 */
+	public void setFriendshipList(List<Friendship> friendship) {
+		String string = getJsonValueOf(friendship);
+		getContent().put(ServerContentTypeKey.FRIENDSHIP_LIST.name(), string);
+		
+	}
 	
 	/**
 	 * @param from
@@ -208,6 +223,14 @@ public class ServerMessage extends AbstractMessage{
 	public void setUsersEventList(List<UserEvent> usersEventList) {
 		String string = getJsonValueOf(usersEventList);
 		getContent().put(ServerContentTypeKey.USERS_EVENT_LIST.name(), string);
+		
+	}
+	/**
+	 * @param from
+	 */
+	public void setUsersIdsList(List<String> usersIdsList) {
+		String string = getJsonValueOf(usersIdsList);
+		getContent().put(ServerContentTypeKey.USERS_IDS_LIST.name(), string);
 		
 	}
 

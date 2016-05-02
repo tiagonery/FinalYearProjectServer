@@ -25,7 +25,7 @@ import server.model.UserEvent.UserEventState;
  */
 public class UserEventDAO {
 
-	private static final String USEREVENT_TABE = "user_event";
+	private static final String USEREVENT_TABLE = "user_event";
 	private static final String USEREVENT_USER_ID_COLUMN = "userid";
 	private static final String USEREVENT_EVENT_ID_COLUMN = "eventid";
 	private static final String USEREVENT_STATE_COLUMN = "state";
@@ -35,7 +35,7 @@ public class UserEventDAO {
 	
 	
 	public UserEvent createUserEvent(String userId,int eventId, UserEventState state )  {
-		String query = "INSERT INTO " + USEREVENT_TABE + " VALUES ('" + userId + "','" + eventId + "','" + state.getNumber() +"');";
+		String query = "INSERT INTO " + USEREVENT_TABLE + " VALUES ('" + userId + "','" + eventId + "','" + state.getNumber() +"');";
 		UserEvent userEvent = null;
 		connection = DAOManager.getConnection();
 		try {
@@ -58,7 +58,7 @@ public class UserEventDAO {
 	 */
 	public List<Integer> getAvailableEvents(String facebookId) {
 		List<Integer> eventsIdsList = new ArrayList<Integer>();
-		String query = "SELECT * FROM "+ USEREVENT_TABE +" WHERE "+USEREVENT_USER_ID_COLUMN+" = '" + facebookId+"' AND "+USEREVENT_STATE_COLUMN+" IN ("+UserEventState.GOING.getNumber()+","+UserEventState.OWNER.getNumber()+","+UserEventState.INVITED.getNumber()+") ORDER BY "+USEREVENT_STATE_COLUMN+";";
+		String query = "SELECT * FROM "+ USEREVENT_TABLE +" WHERE "+USEREVENT_USER_ID_COLUMN+" = '" + facebookId+"' AND "+USEREVENT_STATE_COLUMN+" IN ("+UserEventState.GOING.getNumber()+","+UserEventState.OWNER.getNumber()+","+UserEventState.INVITED.getNumber()+") ORDER BY "+USEREVENT_STATE_COLUMN+";";
 		ResultSet rs = null;
 		AppEvent event = null;
 		try {
@@ -85,7 +85,7 @@ public class UserEventDAO {
 	 * @return
 	 */
 	public UserEvent updateUserEventStatus(String userId,int eventId, UserEventState state) {
-		String query = "UPDATE "+ USEREVENT_TABE +" SET "+USEREVENT_STATE_COLUMN+"= '"+state.getNumber()+"' WHERE "+USEREVENT_USER_ID_COLUMN+"= '"+userId+"' AND "+USEREVENT_EVENT_ID_COLUMN+"='"+eventId+"';";
+		String query = "UPDATE "+ USEREVENT_TABLE +" SET "+USEREVENT_STATE_COLUMN+"= "+state.getNumber()+" WHERE "+USEREVENT_USER_ID_COLUMN+"= '"+userId+"' AND "+USEREVENT_EVENT_ID_COLUMN+" = "+eventId+";";
 		connection = DAOManager.getConnection();
 		UserEvent userEvent = null;
 		try {
@@ -107,7 +107,7 @@ public class UserEventDAO {
 	 * @return
 	 */
 	public List<UserEvent> getUserEventsFromEvent(int eventId) {
-		String query = "SELECT * FROM "+USEREVENT_TABE+" WHERE "+USEREVENT_EVENT_ID_COLUMN+" = '" + eventId+"'";
+		String query = "SELECT * FROM "+USEREVENT_TABLE+" WHERE "+USEREVENT_EVENT_ID_COLUMN+" = '" + eventId+"'";
 		ResultSet rs = null;
 		List<UserEvent> list = new ArrayList<UserEvent>();
 		try {
@@ -135,7 +135,7 @@ public class UserEventDAO {
  * @return
  */
 	public UserEvent getUserEvent(String userId, int eventId) {
-		String query = "SELECT * FROM " + USEREVENT_TABE + " WHERE " + USEREVENT_EVENT_ID_COLUMN + " = " + eventId + " AND " + USEREVENT_USER_ID_COLUMN
+		String query = "SELECT * FROM " + USEREVENT_TABLE + " WHERE " + USEREVENT_EVENT_ID_COLUMN + " = " + eventId + " AND " + USEREVENT_USER_ID_COLUMN
 				+ " = '" + userId + "';";
 		ResultSet rs = null;
 		UserEvent userEvent = null;
@@ -156,5 +156,28 @@ public class UserEventDAO {
 			DbUtil.close(connection);
 		}
 		return userEvent;
+	}
+	
+
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	public boolean deleteUserEventsByEventId(int id) {
+		String query = "DELETE FROM "+USEREVENT_TABLE+" WHERE "+USEREVENT_EVENT_ID_COLUMN+" = "+id;
+		boolean result = true;
+		connection = DAOManager.getConnection();
+		try {
+			statement = connection.createStatement();
+			statement.execute(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			result = false;
+		} finally {
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return result;
 	}
 }

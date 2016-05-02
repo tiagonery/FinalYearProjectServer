@@ -98,6 +98,28 @@ public class WishDAO /** extends AbstractDAO */
 		return wish;
 	}
 
+	public int getWishIdByEventId(int eventId)  {
+		String query = "SELECT * FROM "+WISH_TABLE+" WHERE "+WISH_EVENT_ID_COLUMN+" = " + eventId+"";
+		ResultSet rs = null;
+		int result = -1;
+		try {
+			connection = DAOManager.getConnection();
+			statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			if (rs.next()) {
+				result = rs.getInt(WISH_ID_COLUMN);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs);
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return result;
+	}
+
 
 	/**
 	 * @param surname2
@@ -134,19 +156,17 @@ public class WishDAO /** extends AbstractDAO */
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteWish(String id) {
-		String query = "DELETE FROM table"+WISH_TABLE+"WHERE"+WISH_ID_COLUMN+"='"+id+"';";
-		ResultSet rs = null;
+	public boolean deleteWish(int id) {
+		String query = "DELETE FROM "+WISH_TABLE+" WHERE "+WISH_ID_COLUMN+" = "+id+";";
 		boolean result = true;
 		connection = DAOManager.getConnection();
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.execute(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			result = false;
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}

@@ -203,17 +203,17 @@ public class MessageHandler {
 				case REQUEST_FRIENDSHIP_USERNAME:
 //					core.requestFriendshipByUsername(serverReplyMessage, clientMessage.getUsername()); //not implemented
 					break; 
-				case REQUEST_FRIENDSHIP_FB:
+				case REQUEST_FRIENDSHIP_FB_IDS_LIST:
 					serverReplyMessage = core.requestFriendshipByFacebook(serverReplyMessage, clientMessage.getFacebookIdsList());
 					break; 
 				case ACCEPT_FRIENDSHIP:
-//					core.acceptFriendship(serverReplyMessage, clientMessage.getFriendshipRequest()); //not implemented
+					serverReplyMessage = core.acceptFriendship(serverReplyMessage, clientMessage.getFriendship());
 					break; 
 				case REFUSE_FRIENDSHIP:
-//					core.refuseFriendship(serverReplyMessage, clientMessage.getFacebookID());//not implemented
+					serverReplyMessage = core.refuseFriendship(serverReplyMessage, clientMessage.getFriendship());
 					break; 
 				case SEARCH_USER: 
-//					core.searchUser(serverMessage); //not implemented
+					serverReplyMessage = core.getUsersByName(serverReplyMessage, clientMessage.getUserName());
 					break; 
 				case REMOVE_FRIEND:
 //					core.removeFriend(serverReplyMessage, clientMessage.getFacebookID()); //not implemented
@@ -224,26 +224,26 @@ public class MessageHandler {
 				case CREATE_WISH:
 					serverReplyMessage = core.createWish(serverReplyMessage, clientMessage.getWish());
 					break; 
+				case DELETE_WISH:
+					serverReplyMessage = core.deleteWish(serverReplyMessage, clientMessage.getWishID());
+					break; 
 				case EDIT_EVENT:
 //					core.editEvent(serverMessage); //not implemented
 					break; 
 				case INVITE_TO_EVENT:
-//					core.inviteToEvent(serverReplyMessage, clientMessage.getInviteID(), clientMessage.getFacebookID()); //not implemented
+				serverReplyMessage = core.inviteToEvent(serverReplyMessage, clientMessage.getFacebookIdsList(), clientMessage.getEventId());
 					break; 
-				case ACCEPT_INVITE:
-//					core.acceptInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
-					break; 
-				case REFUSE_INVITE:
-//					core.refuseInvite(serverReplyMessage, clientMessage.getInviteID()); //not implemented
+				case DELETE_EVENT:
+					serverReplyMessage = core.deleteEvent(serverReplyMessage, clientMessage.getEventId());
 					break; 
 				case JOIN_EVENT:
-//					core.joinEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
+					serverReplyMessage = core.joinEvent(serverReplyMessage, clientMessage.getEventId());
 					break; 
 				case JOIN_WISH:
 					serverReplyMessage = core.joinWish(serverReplyMessage, clientMessage.getWishID());
 					break; 
 				case LEAVE_EVENT:
-//					core.leaveEvent(serverReplyMessage, clientMessage.getEventID()); //not implemented
+					serverReplyMessage = core.leaveEvent(serverReplyMessage, clientMessage.getEventId());
 					break; 
 				case REQUEST_EVENTS:
 					serverReplyMessage = core.getEvents(serverReplyMessage);
@@ -259,6 +259,12 @@ public class MessageHandler {
 					break; 
 				case REQUEST_USERS_WISH_LIST:
 					serverReplyMessage = core.getUsersWish(serverReplyMessage, clientMessage.getWishID());
+					break; 
+				case REQUEST_FRIENDS_LIST:
+					serverReplyMessage = core.getFriendsList(serverReplyMessage);
+					break; 
+				case REQUEST_FRIENDS_IDS_LIST:
+					serverReplyMessage = core.getFriendshipIdsList(serverReplyMessage);
 					break; 
 				case WANT_TO_GO_OUT:
 //					core.wantToGoOut(serverReplyMessage); //not implemented

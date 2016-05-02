@@ -3,6 +3,7 @@
  */
 package server.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import server.model.UserEvent.UserEventState;
  * @author Tiago
  *
  */
-public class Friendship {
+public class Friendship implements Serializable{
 
 
 	private String user1Id;

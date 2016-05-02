@@ -104,4 +104,25 @@ public class UserWishDAO {
 		}
 		return list;
 	}
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	public boolean deleteUserWishesByWishId(int id) {
+		String query = "DELETE FROM "+USERWISH_TABE+" WHERE "+USERWISH_WISH_ID_COLUMN+" = "+id+";";
+		boolean result = true;
+		connection = DAOManager.getConnection();
+		try {
+			statement = connection.createStatement();
+			statement.execute(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			result = false;
+		} finally {
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return result;
+	}
 }

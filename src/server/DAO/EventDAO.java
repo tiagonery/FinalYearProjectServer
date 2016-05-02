@@ -127,19 +127,17 @@ public class EventDAO /** extends AbstractDAO */
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteEvent(String id) {
-		String query = "DELETE FROM table"+EVENT_TABE+"WHERE"+EVENT_ID_COLUMN+"='"+id+"';";
-		ResultSet rs = null;
+	public boolean deleteEvent(int id) {
+		String query = "DELETE FROM "+EVENT_TABE+" WHERE "+EVENT_ID_COLUMN+" = "+id+";";
 		boolean result = true;
 		connection = DAOManager.getConnection();
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.execute(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			result = false;
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}
