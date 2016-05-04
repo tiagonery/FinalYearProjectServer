@@ -58,7 +58,7 @@ public class UserEventDAO {
 	 */
 	public List<Integer> getAvailableEvents(String facebookId) {
 		List<Integer> eventsIdsList = new ArrayList<Integer>();
-		String query = "SELECT * FROM "+ USEREVENT_TABLE +" WHERE "+USEREVENT_USER_ID_COLUMN+" = '" + facebookId+"' AND "+USEREVENT_STATE_COLUMN+" IN ("+UserEventState.GOING.getNumber()+","+UserEventState.OWNER.getNumber()+","+UserEventState.INVITED.getNumber()+") ORDER BY "+USEREVENT_STATE_COLUMN+";";
+		String query = "SELECT * FROM "+ USEREVENT_TABLE +" WHERE "+USEREVENT_USER_ID_COLUMN+" = '" + facebookId+"' AND "+USEREVENT_STATE_COLUMN+" IN ("+UserEventState.GOING.getNumber()+","+UserEventState.OWNER.getNumber()+","+UserEventState.INVITED.getNumber()+","+UserEventState.NOT_GOING.getNumber()+") ORDER BY "+USEREVENT_STATE_COLUMN+";";
 		ResultSet rs = null;
 		AppEvent event = null;
 		try {

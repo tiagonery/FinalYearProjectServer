@@ -16,6 +16,7 @@ import server.model.UserEvent.UserEventState;
 public class Friendship implements Serializable{
 
 
+
 	private String user1Id;
 	private String user2Id;
 	private FriendshipState state;
@@ -25,6 +26,7 @@ public class Friendship implements Serializable{
 		REQUEST_UNANSWARED(2),
 		REQUEST_REFUSED(3);
 
+		
 
 	    private final int num;
 	    
@@ -60,6 +62,9 @@ public class Friendship implements Serializable{
 		this.user1Id = user1Id;
 		this.user2Id = user2Id;
 		this.state = state;
+	}
+	
+	public Friendship() {
 	}
 
 	public String getUser1Id() {

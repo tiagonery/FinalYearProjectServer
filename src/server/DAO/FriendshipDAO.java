@@ -57,18 +57,16 @@ public class FriendshipDAO {
 	 * @return
 	 */
 	public Friendship acceptFriendship(Friendship friendship) {
-		String query = "UPDATE "+ FRIENDSHIP_TABLE +" SET "+FRIENDSHIP_STATE_COLUMN+"="+FriendshipState.REQUEST_ACCEPTED.getNumber()+" WHERE "+FRIENDSHIP_USER_1_COLUMN+"="+friendship.getUser1Id()+" AND "+FRIENDSHIP_USER_2_COLUMN+"="+friendship.getUser2Id();
-		ResultSet rs = null;
+		String query = "UPDATE "+ FRIENDSHIP_TABLE +" SET "+FRIENDSHIP_STATE_COLUMN+"="+FriendshipState.REQUEST_ACCEPTED.getNumber()+" WHERE "+FRIENDSHIP_USER_1_COLUMN+"='"+friendship.getUser1Id()+"' AND "+FRIENDSHIP_USER_2_COLUMN+" = '"+friendship.getUser2Id()+"'";
 		connection = DAOManager.getConnection();
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			statement.executeUpdate(query);
 			friendship.setState(FriendshipState.REQUEST_ACCEPTED);
 		} catch (SQLException e) {
 			e.printStackTrace();
 
 		} finally {
-			DbUtil.close(rs);
 			DbUtil.close(statement);
 			DbUtil.close(connection);
 		}
@@ -135,7 +133,7 @@ public class FriendshipDAO {
 	 * @return
 	 */
 	public List<Friendship> getFriendshipsFromFriends(String facebookId) {
-		String query = "SELECT * FROM "+FRIENDSHIP_TABLE+" WHERE "+FRIENDSHIP_STATE_COLUMN+" = "+FriendshipState.REQUEST_ACCEPTED.getNumber()+ " AND "+FRIENDSHIP_USER_1_COLUMN+" = '" + facebookId+"' OR "+FRIENDSHIP_USER_2_COLUMN+" = '" + facebookId+"' ";
+		String query = "SELECT * FROM "+FRIENDSHIP_TABLE+" WHERE "+FRIENDSHIP_STATE_COLUMN+" = "+FriendshipState.REQUEST_ACCEPTED.getNumber()+ " AND ("+FRIENDSHIP_USER_1_COLUMN+" = '" + facebookId+"' OR "+FRIENDSHIP_USER_2_COLUMN+" = '" + facebookId+"') ";
 		ResultSet rs = null;
 		List<Friendship> friendships = new ArrayList<Friendship>();
 		try {

@@ -1024,7 +1024,7 @@ public ServerMessage getUsersForNewEvent(ServerMessage serverReplyMessage) {
 			} else {
 				for (UserEvent userEvent : list) {
 					UserDAO userDAO = new UserDAO();
-					User user = userDAO.getUser(userEvent.getUserId());
+					User user = userDAO.getUserByFB(userEvent.getUserId());
 					if (user != null) {
 						usersList.add(user);
 					} else {
