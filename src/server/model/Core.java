@@ -266,18 +266,50 @@ public class Core {
 	}
 
 	/**
-	 * @param serverReplyMessage 
+	 * @param serverReplyMessage
 	 * @param eventID
 	 */
 	public ServerMessage joinWish(ServerMessage serverReplyMessage, int wishId) {
 		UserWishDAO userWishDAO = new UserWishDAO();
-		UserWish userWish = userWishDAO.createUserWish(getUserRequester().getFacebookId(), wishId);
-		if(userWish!=null){
-			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
-			serverReplyMessage.setUserWish(userWish);
-		}else{
+		if (userWishDAO.getUserWish(wishId, getUserRequester().getFacebookId()) == null) {
+			UserWish userWish = userWishDAO.createUserWish(getUserRequester().getFacebookId(), wishId);
+			if (userWish != null) {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+				serverReplyMessage.setUserWish(userWish);
+			} else {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+				serverReplyMessage.setErrorMessage("Could not create UserWish");
+				System.out.println("Could not create UserWish");
+			}
+		} else {
 			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
-			serverReplyMessage.setErrorMessage("Could not create UserWish");
+			serverReplyMessage.setErrorMessage("User already joined the Wish");
+			System.out.println("User already joined the Wish");
+
+		}
+		return serverReplyMessage;
+
+	}
+
+	/**
+	 * @param serverReplyMessage
+	 * @param eventID
+	 */
+	public ServerMessage leaveWish(ServerMessage serverReplyMessage, int wishId) {
+		UserWishDAO userWishDAO = new UserWishDAO();
+		if (userWishDAO.getUserWish(wishId, getUserRequester().getFacebookId()) != null) {
+			if (userWishDAO.deleteUserWish(wishId, getUserRequester().getFacebookId())) {
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_SUCCES);
+			}
+			else{
+				serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+				serverReplyMessage.setErrorMessage("Could not delete UserWish");
+				System.out.println("Could not delete UserWish");
+			}
+		} else {
+			serverReplyMessage.setServerMessageType(ServerMessageType.REPLY_ERROR);
+			serverReplyMessage.setErrorMessage("There is no UserWish to Update");
+			System.out.println("There is no UserWish to Update");
 		}
 		return serverReplyMessage;
 		

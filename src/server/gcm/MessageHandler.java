@@ -242,6 +242,9 @@ public class MessageHandler {
 				case JOIN_WISH:
 					serverReplyMessage = core.joinWish(serverReplyMessage, clientMessage.getWishID());
 					break; 
+				case LEAVE_WISH:
+					serverReplyMessage = core.leaveWish(serverReplyMessage, clientMessage.getWishID());
+					break; 
 				case LEAVE_EVENT:
 					serverReplyMessage = core.leaveEvent(serverReplyMessage, clientMessage.getEventId());
 					break; 

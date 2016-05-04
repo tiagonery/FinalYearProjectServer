@@ -12,6 +12,7 @@ import java.util.List;
 
 import server.model.Friendship;
 import server.model.Friendship.FriendshipState;
+import server.model.UserEvent;
 import server.model.Wish;
 import server.model.User;
 import server.model.UserWish;
@@ -106,6 +107,32 @@ public class UserWishDAO {
 	}
 
 	/**
+	 * @param wishId
+	 * @return
+	 */
+	public UserWish getUserWish(int wishId, String userId) {
+		String query = "SELECT * FROM "+USERWISH_TABE+" WHERE "+USERWISH_WISH_ID_COLUMN+" = '" + wishId+"' AND "+USERWISH_USER_ID_COLUMN+" = '"+userId+"'";
+		ResultSet rs = null;
+		UserWish userWish = null;
+		try {
+			connection = DAOManager.getConnection();
+			statement = connection.createStatement();
+			rs = statement.executeQuery(query);
+			if (rs.next()) {
+				userWish = new UserWish(rs.getNString(USERWISH_USER_ID_COLUMN), rs.getInt(USERWISH_WISH_ID_COLUMN));
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs);
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return userWish;
+	}
+
+	/**
 	 * @param id
 	 * @return
 	 */
@@ -125,4 +152,28 @@ public class UserWishDAO {
 		}
 		return result;
 	}
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	public boolean deleteUserWish(int wishId, String userId) {
+		String query = "DELETE FROM "+USERWISH_TABE+" WHERE "+USERWISH_WISH_ID_COLUMN+" = "+wishId+" AND "+USERWISH_USER_ID_COLUMN+" = '"+userId+"';";
+		boolean result = true;
+		connection = DAOManager.getConnection();
+		try {
+			statement = connection.createStatement();
+			statement.execute(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			result = false;
+		} finally {
+			DbUtil.close(statement);
+			DbUtil.close(connection);
+		}
+		return result;
+	}
+	
+	
+
 }

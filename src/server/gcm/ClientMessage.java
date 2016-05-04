@@ -67,6 +67,7 @@ public class ClientMessage extends AbstractMessage{
 		REFUSE_INVITE,
 		JOIN_EVENT,
 		JOIN_WISH,
+		LEAVE_WISH,
 		LEAVE_EVENT,
 		REQUEST_EVENTS,
 		REQUEST_WISHES,
