@@ -69,5 +69,6 @@
 	<classpathentry kind="lib" path="com.fasterxml.jackson.core.jar"/>
 	<classpathentry kind="lib" path="com.fasterxml.jackson.databind.jar"/>
 	<classpathentry kind="lib" path="jackson-annotations-2.1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin1"/>
 </classpath>

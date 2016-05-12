@@ -33,29 +33,9 @@ public class UserDAO /** extends AbstractDAO */
 	 * @param con
 	 * @param tableName
 	 */
+	
 	public UserDAO() {
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see server.DAO.GenericDAO#count()
-	 */
-	// @Override
-	// public int count() throws SQLException {
-	// String query = "SELECT COUNT(*) AS count FROM "+this.tableName;
-	// PreparedStatement counter;
-	// try
-	// {
-	// counter = this.con.prepareStatement(query);
-	// ResultSet res = counter.executeQuery();
-	// res.next();
-	// return res.getInt("count");
-	// }
-	// catch(SQLException e){ throw e; }
-	//
-	// }
-	//
 
 	public User getUser(String userRegId)  {
 		String query = "SELECT * FROM user WHERE "+USER_ID_COLUMN+" = '" + userRegId+"'";
@@ -69,7 +49,6 @@ public class UserDAO /** extends AbstractDAO */
 				user = new User(userRegId,rs.getNString(USER_FACEBOOK_ID_COLUMN),rs.getNString(USER_NAME_COLUMN),rs.getNString(USER_SURNAME_COLUMN) );
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			DbUtil.close(rs);
