@@ -94,7 +94,7 @@ public class ServerMessage extends AbstractMessage{
 	 * @param to2
 	 * @param messageType
 	 */
-	public ServerMessage(String to2, ServerMessageType messageType) {
+	public ServerMessage(String to, ServerMessageType messageType) {
         this.to = to;	
         setServerMessageType(messageType);
     

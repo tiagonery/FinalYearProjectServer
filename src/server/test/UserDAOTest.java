@@ -5,7 +5,8 @@ package server.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,9 @@ public class UserDAOTest {
 	 */
 	@Test
 	public final void testUserDAO() {
-		fail("Not yet implemented"); // TODO
+		UserDAO dao = new UserDAO();
+		
+		assertNotEquals("number was inserted on numbersList", dao, null);
 	}
 
 	/**
@@ -45,8 +48,8 @@ public class UserDAOTest {
 
 		User existingResult = dao.getUser(existingUserId);
 		User fakeResult = dao.getUser(fakeUserId);
-		assertEquals("number was removed from availableBigNumbers", fakeResult, null);
-		assertNotEquals("number was inserted on numbersList", existingResult, null);
+		assertEquals("fake id should result null", fakeResult, null);
+		assertNotEquals("real id should not be null, if that user is on database", existingResult, null);
 	}
 
 	/**
@@ -54,7 +57,14 @@ public class UserDAOTest {
 	 */
 	@Test
 	public final void testCreateNewUser() {
-		fail("Not yet implemented"); // TODO
+		UserDAO dao = new UserDAO();
+		String id = "APA91bHUZGyYDHPKkgZftX1FL_RMXGJvD5zHx63ldntPiYOtMKpsbR5oBPMuVeSGwNmP-9J5kPPS8rw7TcklgNY_2EvTDy1G8ZlYP1VQ5goxBJAescCCB3bovggUM3M88Ozoi9UuU-WI"; 
+		String facebookId = "123457457365835683568"; 
+		String name = "Name";
+		String surname = "SurName";
+
+		User newUser = dao.createNewUser(id, facebookId, name, surname);
+		assertNotEquals("user should not be null", newUser, null);
 	}
 
 	/**
@@ -62,7 +72,11 @@ public class UserDAOTest {
 	 */
 	@Test
 	public final void testDeleteUser() {
-		fail("Not yet implemented"); // TODO
+		UserDAO dao = new UserDAO();
+		String facebookId = "8626362604587331"; 
+
+		boolean result = dao.deleteUser(facebookId);
+		assertNotEquals("if id is existent, result should be true", result, true);
 	}
 
 	/**
@@ -70,7 +84,14 @@ public class UserDAOTest {
 	 */
 	@Test
 	public final void testGetUserByFB() {
-		fail("Not yet implemented"); // TODO
+		UserDAO dao = new UserDAO();
+		String facebookID = "862636260458733"; 
+		String fakeFacebookID = "fakefakefake123"; 
+
+		User existingResult = dao.getUserByFB(facebookID);
+		User fakeResult = dao.getUserByFB(fakeFacebookID);
+		assertEquals("fake id should result null", fakeResult, null);
+		assertNotEquals("real id should not be null, if that user is on database", existingResult, null);
 	}
 
 	/**
@@ -78,7 +99,14 @@ public class UserDAOTest {
 	 */
 	@Test
 	public final void testGetUserListByName() {
-		fail("Not yet implemented"); // TODO
+		UserDAO dao = new UserDAO();
+		String name = "tiago"; 
+		String fakeName = "fakefakefake"; 
+
+		List<User> existingResult = dao.getUserListByName(name);
+		List<User>  fakeResult = dao.getUserListByName(fakeName);
+		assertEquals("fake name should result null", fakeResult, null);
+		assertNotEquals("real name should not be null, if that user is on database", existingResult, null);
 	}
 
 }
